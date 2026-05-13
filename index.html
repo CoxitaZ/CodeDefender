@@ -1,0 +1,1103 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CODE DEFENDER</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;600;700&display=swap');
+
+  :root {
+    --bg: #0d0d0d;
+    --green: #00ff41;
+    --green-dim: #00882b;
+    --green-dark: #003311;
+    --red: #ff2244;
+    --cyan: #00e5ff;
+    --yellow: #ffe600;
+    --orange: #ff8c00;
+    --purple: #bf5fff;
+    --grid-line: #1a1a1a;
+    --panel: #111111;
+    --border: #1f3d1f;
+    --text: #c8ffc8;
+    --text-dim: #4a7a4a;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--green);
+    font-family: 'JetBrains Mono', 'Courier New', monospace;
+    overflow: hidden;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    user-select: none;
+  }
+
+  /* START OVERLAY */
+  #start-overlay {
+    position: fixed; inset: 0; z-index: 500; display: flex; align-items: center; justify-content: center;
+    background: rgba(0,0,0,0.94);
+  }
+  #start-box {
+    width: 520px; background: #070707; border: 1px solid var(--green); padding: 22px; border-radius: 4px;
+    box-shadow: 0 0 40px rgba(0,255,65,0.12);
+  }
+  #start-box h2 { color:var(--green); letter-spacing:4px; margin-bottom:8px; }
+  .start-row { display:flex; gap:8px; align-items:center; margin-bottom:12px; }
+  .start-row label { font-size:12px; color:var(--text-dim); min-width:110px; }
+  .start-input { flex:1; padding:8px; background:#0b0b0b; border:1px solid #122; color:var(--text); }
+  .map-opts { display:flex; gap:10px; }
+  .map-card { border:1px solid #122; padding:10px; cursor:pointer; background:#0b0b0b; color:var(--text-dim); }
+  .map-card.selected { border-color:var(--cyan); box-shadow:0 0 8px rgba(0,230,255,0.08); color:var(--cyan); }
+  .start-actions { display:flex; gap:8px; justify-content:flex-end; margin-top:8px; }
+
+  /* HEADER */
+  #header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 6px 16px;
+    border-bottom: 1px solid var(--border);
+    background: #0a0a0a;
+    flex-shrink: 0;
+    position: relative;
+  }
+  #header::after {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--green), transparent);
+    opacity: 0.5;
+  }
+  #title {
+    font-size: 18px;
+    font-weight: 700;
+    letter-spacing: 4px;
+    color: var(--green);
+    text-shadow: 0 0 12px var(--green);
+  }
+  #title span { color: var(--cyan); }
+  .stat-group { display: flex; gap: 20px; align-items: center; }
+  .stat {
+    font-size: 11px;
+    display: flex; align-items: center; gap: 6px;
+    color: var(--text-dim);
+  }
+  .stat-val {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--green);
+    text-shadow: 0 0 8px var(--green-dim);
+    min-width: 30px;
+    display: inline-block;
+  }
+  .stat-val.warn { color: var(--yellow); }
+  .stat-val.danger { color: var(--red); animation: blink 0.5s infinite; }
+  #wave-info { font-size: 11px; color: var(--cyan); letter-spacing: 2px; }
+
+  /* MAIN LAYOUT */
+  #main {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+  }
+
+  /* SIDEBAR */
+  #sidebar {
+    width: 200px;
+    border-right: 1px solid var(--border);
+    background: var(--panel);
+    display: flex;
+    flex-direction: column;
+    padding: 10px 8px;
+    gap: 8px;
+    flex-shrink: 0;
+    overflow-y: auto;
+  }
+  .sidebar-title {
+    font-size: 9px;
+    letter-spacing: 3px;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    padding: 0 4px 6px;
+    border-bottom: 1px solid var(--border);
+  }
+  .tower-card {
+    border: 1px solid var(--border);
+    border-radius: 2px;
+    padding: 8px;
+    cursor: pointer;
+    transition: all 0.15s;
+    position: relative;
+    background: #0e0e0e;
+  }
+  .tower-card:hover { border-color: var(--green-dim); background: #111; }
+  .tower-card.selected {
+    border-color: var(--green);
+    background: var(--green-dark);
+    box-shadow: 0 0 10px rgba(0,255,65,0.2);
+  }
+  .tower-card.disabled { opacity: 0.4; cursor: not-allowed; }
+  .tower-name {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--green);
+    margin-bottom: 3px;
+  }
+  .tower-name .badge {
+    font-size: 9px;
+    background: var(--green-dark);
+    border: 1px solid var(--green-dim);
+    border-radius: 2px;
+    padding: 1px 4px;
+    margin-right: 4px;
+    color: var(--green);
+  }
+  .tower-desc { font-size: 9px; color: var(--text-dim); line-height: 1.5; margin-bottom: 4px; }
+  .tower-cost {
+    font-size: 10px;
+    color: var(--cyan);
+    display: flex; align-items: center; gap: 4px;
+  }
+  .tower-cost .ram-icon { color: var(--yellow); }
+
+  .divider { border: none; border-top: 1px solid var(--border); margin: 2px 0; }
+
+  #log-box {
+    flex: 1;
+    border: 1px solid var(--border);
+    border-radius: 2px;
+    padding: 6px;
+    overflow-y: auto;
+    font-size: 9px;
+    color: var(--text-dim);
+    line-height: 1.8;
+    background: #0a0a0a;
+    min-height: 80px;
+  }
+  #log-box div { border-bottom: 1px solid #111; padding: 1px 0; }
+  #log-box .log-ok { color: var(--green-dim); }
+  #log-box .log-warn { color: var(--yellow); }
+  #log-box .log-err { color: var(--red); }
+  #log-box .log-info { color: var(--cyan); }
+
+  /* CANVAS */
+  #canvas-wrap {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg);
+    position: relative;
+    overflow: hidden;
+  }
+  canvas { display: block; cursor: crosshair; }
+
+  /* RIGHT PANEL */
+  #right-panel {
+    width: 190px;
+    border-left: 1px solid var(--border);
+    background: var(--panel);
+    display: flex;
+    flex-direction: column;
+    padding: 10px 8px;
+    gap: 8px;
+    flex-shrink: 0;
+  }
+  .panel-section { display: flex; flex-direction: column; gap: 6px; }
+  .panel-title {
+    font-size: 9px;
+    letter-spacing: 3px;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    padding-bottom: 6px;
+    border-bottom: 1px solid var(--border);
+  }
+  #selected-info {
+    font-size: 10px;
+    color: var(--text-dim);
+    line-height: 1.8;
+    min-height: 60px;
+  }
+  #selected-info .info-name { color: var(--green); font-weight: 700; font-size: 11px; }
+  #selected-info .info-stat { color: var(--cyan); }
+
+  .btn {
+    background: transparent;
+    border: 1px solid var(--green-dim);
+    color: var(--green);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    padding: 6px 10px;
+    cursor: pointer;
+    letter-spacing: 1px;
+    transition: all 0.15s;
+    text-align: center;
+  }
+  .btn:hover { background: var(--green-dark); border-color: var(--green); box-shadow: 0 0 8px rgba(0,255,65,0.2); }
+  .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+  .btn.btn-red { border-color: #661122; color: var(--red); }
+  .btn.btn-red:hover { background: #1a0008; border-color: var(--red); }
+  .btn.btn-cyan { border-color: #006677; color: var(--cyan); }
+  .btn.btn-cyan:hover { background: #001a1f; border-color: var(--cyan); }
+
+  #wave-bar { margin-top: auto; }
+  .progress-label { font-size: 9px; color: var(--text-dim); margin-bottom: 4px; }
+  .progress-track {
+    height: 4px;
+    background: #1a1a1a;
+    border: 1px solid var(--border);
+    position: relative;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    background: var(--green);
+    box-shadow: 0 0 6px var(--green);
+    transition: width 0.3s;
+  }
+  .progress-fill.red { background: var(--red); box-shadow: 0 0 6px var(--red); }
+
+  /* UPGRADE MODAL */
+  #upgrade-modal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.85);
+    z-index: 100;
+    align-items: center;
+    justify-content: center;
+  }
+  #upgrade-modal.visible { display: flex; }
+  #modal-box {
+    background: #0a0a0a;
+    border: 1px solid var(--green);
+    box-shadow: 0 0 40px rgba(0,255,65,0.2), inset 0 0 20px rgba(0,255,65,0.03);
+    padding: 24px 28px;
+    width: 460px;
+    max-width: 95vw;
+    position: relative;
+  }
+  #modal-box::before {
+    content: 'UPGRADE_PROTOCOL.exe';
+    position: absolute;
+    top: -1px; left: 20px;
+    background: #0a0a0a;
+    padding: 0 8px;
+    font-size: 9px;
+    color: var(--green-dim);
+    letter-spacing: 2px;
+    transform: translateY(-50%);
+  }
+  #modal-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--green);
+    margin-bottom: 4px;
+    letter-spacing: 2px;
+  }
+  #modal-sub { font-size: 10px; color: var(--text-dim); margin-bottom: 18px; }
+  #modal-challenge {
+    background: #0f160f;
+    border: 1px solid var(--green-dark);
+    border-radius: 2px;
+    padding: 14px;
+    margin-bottom: 16px;
+    font-size: 12px;
+    color: var(--text);
+    line-height: 2;
+  }
+  .option-row { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
+  .option-btn {
+    background: #0e1a0e;
+    border: 1px solid var(--green-dim);
+    color: var(--green);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    font-weight: 700;
+    padding: 8px 18px;
+    cursor: pointer;
+    transition: all 0.15s;
+    letter-spacing: 1px;
+  }
+  .option-btn:hover { background: var(--green-dark); border-color: var(--green); box-shadow: 0 0 10px rgba(0,255,65,0.3); }
+  .option-btn.correct { background: #003311; border-color: var(--green); color: var(--green); box-shadow: 0 0 15px rgba(0,255,65,0.5); }
+  .option-btn.wrong { background: #1a0008; border-color: var(--red); color: var(--red); }
+  #modal-feedback {
+    font-size: 11px;
+    min-height: 18px;
+    margin-bottom: 12px;
+    padding: 6px 10px;
+    border-left: 2px solid transparent;
+  }
+  #modal-feedback.ok { border-color: var(--green); color: var(--green); background: #001a00; }
+  #modal-feedback.fail { border-color: var(--red); color: var(--red); background: #1a0005; }
+  .modal-actions { display: flex; gap: 8px; justify-content: flex-end; }
+
+  /* GAME OVER / WIN */
+  #overlay {
+    display: none;
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.9);
+    z-index: 200;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 16px;
+  }
+  #overlay.visible { display: flex; }
+  #overlay-title {
+    font-size: 36px;
+    font-weight: 700;
+    letter-spacing: 8px;
+    text-shadow: 0 0 30px currentColor;
+  }
+  #overlay-title.win { color: var(--green); }
+  #overlay-title.lose { color: var(--red); }
+  #overlay-msg { font-size: 12px; color: var(--text-dim); letter-spacing: 2px; }
+  #overlay-score { font-size: 14px; color: var(--cyan); letter-spacing: 3px; }
+
+  /* Scanline effect */
+  #scanlines {
+    position: fixed; inset: 0;
+    pointer-events: none;
+    z-index: 999;
+    background: repeating-linear-gradient(
+      to bottom,
+      transparent 0px,
+      transparent 3px,
+      rgba(0,0,0,0.08) 3px,
+      rgba(0,0,0,0.08) 4px
+    );
+  }
+
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.2} }
+
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-track { background: #0a0a0a; }
+  ::-webkit-scrollbar-thumb { background: var(--green-dark); }
+</style>
+</head>
+<body>
+<div id="scanlines"></div>
+
+<!-- START OVERLAY -->
+<div id="start-overlay">
+  <div id="start-box">
+    <h2>CODE DEFENDER — SESSION</h2>
+    <div class="start-row">
+      <label>PLAYER NAME</label>
+      <input id="player-name" class="start-input" placeholder="Anon" />
+    </div>
+    <div class="start-row">
+      <label>SELECT MAP</label>
+      <div class="map-opts">
+        <div class="map-card selected" data-map="standard" id="map-standard">MAP 1 — STANDARD<br><small style="color:var(--text-dim)">Caminho padrão</small></div>
+        <div class="map-card" data-map="datacenter" id="map-datacenter">MAP 2 — DATA CENTER<br><small style="color:var(--text-dim)">Curvas fechadas, test de posicionamento</small></div>
+      </div>
+    </div>
+    <div class="start-actions">
+      <button class="btn btn-red" onclick="cancelSession()">CANCEL</button>
+      <button class="btn btn-cyan" onclick="startSession()">START_SESSION</button>
+    </div>
+  </div>
+</div>
+
+<!-- HEADER -->
+<div id="header">
+  <div id="title"><span>&gt;</span> CODE_DEFENDER <span>v2.2</span></div>
+  <div class="stat-group">
+    <div class="stat">RAM <span class="stat-val" id="stat-ram">200</span> MB</div>
+    <div class="stat">LIVES <span class="stat-val" id="stat-lives">10</span></div>
+    <div class="stat">SCORE <span class="stat-val" id="stat-score">0</span></div>
+  </div>
+  <div id="wave-info">WAVE <span id="stat-wave">0</span> / <span id="stat-maxwave">8</span></div>
+</div>
+
+<!-- MAIN -->
+<div id="main">
+  <!-- SIDEBAR -->
+  <div id="sidebar">
+    <div class="sidebar-title">&gt; install_tower</div>
+
+    <div class="tower-card" id="card-firewall" onclick="selectTower('firewall')">
+      <div class="tower-name"><span class="badge">if</span>Basic_Firewall</div>
+      <div class="tower-desc">Atira em 1 bug por vez. Dano padrão. Crítico em tags STRING/INT.</div>
+      <div class="tower-cost"><span class="ram-icon">▣</span> 30 MB RAM</div>
+    </div>
+
+    <div class="tower-card" id="card-loop" onclick="selectTower('loop')">
+      <div class="tower-name"><span class="badge">for</span>Loop_Cannon</div>
+      <div class="tower-desc">Atira em múltiplos bugs em sequência. Área de efeito linear.</div>
+      <div class="tower-cost"><span class="ram-icon">▣</span> 50 MB RAM</div>
+    </div>
+
+    <div class="tower-card" id="card-debug" onclick="selectTower('debug')">
+      <div class="tower-name"><span class="badge">~~</span>Debug_Buffer</div>
+      <div class="tower-desc">Aplica slow nos bugs. Reduz velocidade em 50%.</div>
+      <div class="tower-cost"><span class="ram-icon">▣</span> 40 MB RAM</div>
+    </div>
+
+    <div class="tower-card" id="card-regex" onclick="selectTower('regex')">
+      <div class="tower-name"><span class="badge">/**/</span>Regex_Bomb</div>
+      <div class="tower-desc">Explosão em área. Causa dano a todos bugs no raio.</div>
+      <div class="tower-cost"><span class="ram-icon">▣</span> 70 MB RAM</div>
+    </div>
+
+    <hr class="divider">
+    <div class="sidebar-title">&gt; sys_log</div>
+    <div id="log-box"></div>
+  </div>
+
+  <!-- CANVAS -->
+  <div id="canvas-wrap">
+    <canvas id="gameCanvas"></canvas>
+  </div>
+
+  <!-- RIGHT PANEL -->
+  <div id="right-panel">
+    <div class="panel-section">
+      <div class="panel-title">&gt; node_info</div>
+      <div id="selected-info">
+        <div style="color:var(--text-dim); font-size:10px">
+          Selecione uma torre no painel<br>e clique no grid para instalar.<br><br>
+          Clique em uma torre instalada<br>para ver opções de upgrade.
+        </div>
+      </div>
+    </div>
+
+    <hr class="divider">
+
+    <div class="panel-section">
+      <div class="panel-title">&gt; controls</div>
+      <button class="btn btn-cyan" id="btn-wave" onclick="startWave()">▶ NEXT_WAVE</button>
+      <button class="btn" id="btn-auto" onclick="toggleAutoStart()">AUTO_START: OFF</button>
+      <button class="btn btn-red" id="btn-sell" onclick="sellTower()" style="display:none">✕ REMOVE_NODE</button>
+      <button class="btn" onclick="deselectAll()" style="margin-top:4px">◌ DESELECT</button>
+    </div>
+
+    <hr class="divider">
+
+    <div id="wave-bar" class="panel-section">
+      <div class="panel-title">&gt; wave_progress</div>
+      <div class="progress-label">Bugs eliminados:</div>
+      <div class="progress-track"><div class="progress-fill" id="prog-bugs" style="width:0%"></div></div>
+      <div class="progress-label" style="margin-top:8px">Integridade do sistema:</div>
+      <div class="progress-track"><div class="progress-fill" id="prog-lives" style="width:100%"></div></div>
+      <div style="font-size:9px; color:var(--text-dim); margin-top:10px; line-height:1.7">
+        <span style="color:var(--green)">■</span> Caminho do bug<br>
+        <span style="color:var(--cyan)">◉</span> Torre instalada<br>
+        <span style="color:var(--text-dim)">□</span> Slot disponível
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- UPGRADE MODAL -->
+<div id="upgrade-modal">
+  <div id="modal-box">
+    <div id="modal-title">UPGRADE_CHALLENGE</div>
+    <div id="modal-sub">Complete a lógica para desbloquear o upgrade:</div>
+    <div id="modal-challenge"></div>
+    <div class="option-row" id="modal-options"></div>
+    <div id="modal-feedback"></div>
+    <div class="modal-actions">
+      <button class="btn btn-red" onclick="closeModal()">CANCELAR</button>
+    </div>
+  </div>
+</div>
+
+<!-- GAME OVER OVERLAY -->
+<div id="overlay">
+  <div id="overlay-title">GAME_OVER</div>
+  <div id="overlay-msg">SISTEMA COMPROMETIDO — REINICIANDO...</div>
+  <div id="overlay-score">SCORE: <span id="final-score">0</span></div>
+  <button class="btn btn-cyan" onclick="resetGame()" style="margin-top:12px; padding: 10px 30px; font-size:13px">⟳ REINICIAR</button>
+</div>
+
+<script>
+// ENGINE PRINCIPAL — atualizações: menu inicial, mapas, balance, branching upgrades, novos bugs, auto-start
+
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
+const CELL = 44, COLS = 18, ROWS = 13;
+canvas.width = COLS * CELL; canvas.height = ROWS * CELL;
+
+// MAPS (Standard e Data Center)
+const MAPS = {
+  standard: [
+    [0,2],[1,2],[2,2],[3,2],[3,3],[3,4],[3,5],[4,5],[5,5],[6,5],
+    [6,4],[6,3],[6,2],[7,2],[8,2],[9,2],[10,2],[10,3],[10,4],[10,5],
+    [10,6],[10,7],[9,7],[8,7],[7,7],[6,7],[5,7],[5,8],[5,9],[5,10],
+    [6,10],[7,10],[8,10],[9,10],[10,10],[11,10],[12,10],[12,9],[12,8],
+    [12,7],[12,6],[13,6],[14,6],[15,6],[16,6],[17,6]
+  ],
+  datacenter: [
+    [0,6],[1,6],[2,6],[3,6],[3,5],[3,4],[2,4],[1,4],[1,3],[1,2],
+    [2,2],[3,2],[4,2],[5,2],[6,2],[6,3],[6,4],[7,4],[8,4],[9,4],
+    [9,5],[9,6],[9,7],[8,7],[7,7],[6,7],[5,7],[5,8],[5,9],[6,9],
+    [7,9],[8,9],[9,9],[10,9],[11,9],[11,8],[11,7],[12,7],[13,7],[14,7],
+    [14,6],[14,5],[13,5],[12,5],[11,5],[10,5],[9,5],[8,5],[7,5],[6,5],
+    [5,5],[4,5],[3,5],[2,5],[1,5],[0,5],[0,4],[0,3],[0,2],[1,2],[2,2]
+  ]
+};
+let PATH = MAPS.standard.slice();
+let PATH_SET = new Set(PATH.map(([c,r])=>`${c},${r}`));
+
+// ESTADO
+let state = {};
+function initState() {
+  state = {
+    playerName: 'Anon',
+    ram: 200,                // recursos iniciais aumentados
+    lives: 10,
+    score: 0,
+    wave: 0,
+    maxWaves: 8,
+    waveActive: false,
+    towers: [],
+    bugs: [],
+    projectiles: [],
+    particles: [],
+    bugSpawnQueue: [],
+    spawnTimer: 0,
+    spawnInterval: 40,
+    bugsThisWave: 0,
+    bugsKilled: 0,
+    towerIdCounter: 0,
+    selectedTowerType: null,
+    selectedTowerObj: null,
+    gameOver: false,
+    won: false,
+    tick: 0,
+    floatingTexts: [],
+    pendingUpgradePath: null,
+    autoStart: false,        // toggle para auto-start
+  };
+}
+initState();
+
+// TOWER_DEFS (balance: Firewall dmg 25, Regex 45)
+const TOWER_DEFS = {
+  firewall: {
+    name: 'Basic_Firewall', badge: 'if',
+    color: '#00ff41', color2: '#003311',
+    cost: 30, range: 3.5, fireRate: 60, dmg: 25, multiShot: 1, // dano aumentado
+    slow: 0, aoe: 0, desc: 'Dano crítico ×2 em STRING/INT', symbol: 'F',
+    paths: {
+      IF_ELSE_BLOCK: { name:'IF_ELSE_BLOCK', desc:'Foco em DANO consistente', dmgBonus:8, rangeBonus:0, multiShotBonus:0, fireRateReduce:0, symbol:'E', color:'#66ff66', color2:'#003f00' },
+      ELSE_IF_CHAIN:  { name:'ELSE_IF_CHAIN', desc:'Foco em ALCANCE e múltiplos alvos', dmgBonus:0, rangeBonus:1.0, multiShotBonus:1, fireRateReduce:0, symbol:'≡', color:'#00ff99', color2:'#002f1a' }
+    }
+  },
+  loop: {
+    name:'Loop_Cannon', badge:'for',
+    color:'#00e5ff', color2:'#001a22',
+    cost:50, range:3, fireRate:45, dmg:12, multiShot:3, slow:0, aoe:0, desc:'Atira em múltiplos bugs em sequência', symbol:'∀',
+    paths: {
+      WHILE_RECURSION:{ name:'WHILE_RECURSION', desc:'Aplica slow adicional', slowBonus:0.3, fireRateReduce:5, symbol:'ω', color:'#88e6ff', color2:'#001529' },
+      NESTED_FOR:     { name:'NESTED_FOR', desc:'Aumenta quantidade de disparos', multiShotBonus:2, rangeBonus:0.5, symbol:'∑', color:'#66dfff', color2:'#001733' }
+    }
+  },
+  debug: {
+    name:'Debug_Buffer', badge:'~~',
+    color:'#ffe600', color2:'#1a1400',
+    cost:40, range:3, fireRate:50, dmg:8, multiShot:1, slow:0.5, aoe:0, desc:'Aplica slow 50% nos bugs', symbol:'D',
+    paths: {
+      TRY_CATCH_SHIELD:{ name:'TRY_CATCH_SHIELD', desc:'Dano em área ao redor da torre', dmgBonus:6, aoeAdd:1.2, symbol:'⊚', color:'#fff38a', color2:'#3a2e00' },
+      BREAK_CONTINUE:  { name:'BREAK_CONTINUE', desc:'Paralisa bugs por 1s ao acertar', paralyzeOnHit:60, symbol:'∥', color:'#ffd84a', color2:'#2a1f00' }
+    }
+  },
+  regex: {
+    name:'Regex_Bomb', badge:'/****/',
+    color:'#ff8c00', color2:'#1a0800',
+    cost:70, range:2.5, fireRate:90, dmg:45, multiShot:1, slow:0, aoe:1.5, // dano aumentado
+    desc:'Explosão em área, dano a todos', symbol:'R', paths: {}
+  }
+};
+
+// BUG_TYPES (inclui TROJAN, WORM, ENCRYPTOR)
+const BUG_TYPES = [
+  { label:'STR',  type:'STRING',    tag:'STRING',    color:'#ff5588', hp:60,  speed:1.0, ram:10 },
+  { label:'INT',  type:'INTEGER',   tag:'INTEGER',   color:'#ff8c00', hp:80,  speed:0.8, ram:15 },
+  { label:'NUL',  type:'NUL',       tag:'NULL',      color:'#888888', hp:40,  speed:1.4, ram:8  },
+  { label:'OBJ',  type:'OBJ',       tag:'OBJECT',    color:'#bf5fff', hp:120, speed:0.6, ram:20 },
+  { label:'ARR',  type:'ARR',       tag:'ARRAY',     color:'#00e5ff', hp:100, speed:0.9, ram:18 },
+  // especiais
+  { label:'TRJ',  type:'TROJAN',    tag:'TROJAN',    color:'#aa00ff', hp:260, speed:0.45, ram:30 }, // ao morrer gera 2 NUL
+  { label:'WRM',  type:'WORM',      tag:'WORM',      color:'#ffdd55', hp:70,  speed:1.0,  ram:12 }, // ganha burst speed ao ser atingido 1x
+  { label:'ENC',  type:'ENCRYPTOR', tag:'ENCRYPTOR', color:'#55ccff', hp:180, speed:0.7,  ram:25 }  // imune a slow
+];
+
+// UPGRADE_CHALLENGES (níveis LV1..LV3 já incluindo progressão)
+const UPGRADE_CHALLENGES = {
+  firewall: {
+    IF_ELSE_BLOCK: {
+      1: [{ prompt:'if (bug.health ___ 50) { fix(); }', options:['>','<','=='], correct:'>', explain:'Verifica se health é maior que 50.' }],
+      2: [{ prompt:'Quando usar else após if?', options:['quando condição inicial for falsa','quando true','sempre'], correct:'quando condição inicial for falsa', explain:'else executa quando condição é falsa.' }],
+      3: [{ prompt:'Qual evita execução múltipla incorreta?', options:['if/else if/else','if+else','switch'], correct:'if/else if/else', explain:'Encadeamento correto.' }]
+    },
+    ELSE_IF_CHAIN: {
+      1: [{ prompt:'Qual operador encadeia testes adicionais?', options:['else if','else','if'], correct:'else if', explain:'Permite checar outras condições.' }],
+      2: [{ prompt:'else if é útil quando...', options:['há múltiplas condições mutuamente exclusivas','quer repetir código','sempre'], correct:'há múltiplas condições mutuamente exclusivas', explain:'Evita branches redundantes.' }],
+      3: [{ prompt:'A ordem em else if importa?', options:['sim','não','às vezes'], correct:'sim', explain:'Primeira condição verdadeira corta as demais.' }]
+    }
+  },
+  loop: {
+    WHILE_RECURSION: {
+      1: [{ prompt:'while (i ___ 10) {}', options:['<','>','<='], correct:'<', explain:'Loop sobe até 10.' }],
+      2: [{ prompt:'Recursão pode substituir...', options:['loops','variáveis','funções'], correct:'loops', explain:'Recursão substitui iteração em alguns casos.' }],
+      3: [{ prompt:'Cuidado com recursão: ? ', options:['stack overflow','performance','ambos'], correct:'ambos', explain:'Pode estourar pilha e ser lenta.' }]
+    },
+    NESTED_FOR: {
+      1: [{ prompt:'Complexidade de nested for?', options:['O(n*m)','O(n+m)','O(n)'], correct:'O(n*m)', explain:'Produto das iterações.' }],
+      2: [{ prompt:'Nested loops úteis para...', options:['matrizes','strings','eventos'], correct:'matrizes', explain:'Percorrer matrizes 2D.' }],
+      3: [{ prompt:'Como reduzir custo em nested for?', options:['algoritmos melhores','aumentar n','duplicar loops'], correct:'algoritmos melhores', explain:'Trocar algoritmo.' }]
+    }
+  },
+  debug: {
+    TRY_CATCH_SHIELD: {
+      1: [{ prompt:'try { } catch (e) { } — propósito?', options:['capturar erros','melhorar velocidade','criar loops'], correct:'capturar erros', explain:'Protege contra exceções.' }],
+      2: [{ prompt:'catch pode acessar erro?', options:['sim','não','às vezes'], correct:'sim', explain:'catch recebe a exceção.' }],
+      3: [{ prompt:'finally executa sempre?', options:['sim','não','só em erros'], correct:'sim', explain:'finally sempre roda.' }]
+    },
+    BREAK_CONTINUE: {
+      1: [{ prompt:'continue faz o que?', options:['pula iteração','para loop','reinicia programa'], correct:'pula iteração', explain:'Avança para próxima iteração.' }],
+      2: [{ prompt:'break faz o que?', options:['sai do loop','pula iteração','reinicia iteração'], correct:'sai do loop', explain:'Interrompe o loop.' }],
+      3: [{ prompt:'Quando usar continue vs break?', options:['depende do fluxo','sempre continue','sempre break'], correct:'depende do fluxo', explain:'Escolher conforme objetivo.' }]
+    }
+  }
+};
+
+// FUNÇÕES AUXILIARES
+function setMap(mapKey) {
+  PATH = MAPS[mapKey].slice();
+  PATH_SET = new Set(PATH.map(([c,r])=>`${c},${r}`));
+  log(`Mapa setado: ${mapKey}`, 'info');
+}
+
+function toggleAutoStart() {
+  state.autoStart = !state.autoStart;
+  const btn = document.getElementById('btn-auto');
+  btn.textContent = `AUTO_START: ${state.autoStart ? 'ON' : 'OFF'}`;
+  btn.style.borderColor = state.autoStart ? '#00aaff' : '';
+  log(`Auto-start ${state.autoStart ? 'ativado' : 'desativado'}`, 'info');
+}
+
+document.getElementById('map-standard').addEventListener('click', e => {
+  document.getElementById('map-standard').classList.add('selected');
+  document.getElementById('map-datacenter').classList.remove('selected');
+});
+document.getElementById('map-datacenter').addEventListener('click', e => {
+  document.getElementById('map-datacenter').classList.add('selected');
+  document.getElementById('map-standard').classList.remove('selected');
+});
+
+function startSession() {
+  const name = document.getElementById('player-name').value.trim();
+  state.playerName = name || 'Anon';
+  const map = document.getElementById('map-datacenter').classList.contains('selected') ? 'datacenter' : 'standard';
+  setMap(map);
+  document.getElementById('start-overlay').style.display = 'none';
+  document.getElementById('btn-wave').disabled = false;
+  log(`Sessão iniciada — Jogador: ${state.playerName}`, 'info');
+  document.getElementById('title').textContent = `> CODE_DEFENDER ${state.playerName}`;
+}
+
+function cancelSession() {
+  document.getElementById('player-name').value = '';
+  document.getElementById('start-overlay').style.display = 'none';
+  document.getElementById('btn-wave').disabled = true;
+}
+
+// LOG / UI
+function log(msg, type='ok') {
+  const box = document.getElementById('log-box');
+  const d = document.createElement('div');
+  d.className = `log-${type}`;
+  d.textContent = `> ${msg}`;
+  box.appendChild(d);
+  box.scrollTop = box.scrollHeight;
+  if (box.children.length > 60) box.removeChild(box.children[0]);
+}
+
+function updateUI() {
+  const ramEl  = document.getElementById('stat-ram');
+  const livesEl = document.getElementById('stat-lives');
+  const scoreEl = document.getElementById('stat-score');
+  const waveEl  = document.getElementById('stat-wave');
+  document.getElementById('stat-maxwave').textContent = state.maxWaves;
+  ramEl.textContent   = state.ram;
+  livesEl.textContent = state.lives;
+  scoreEl.textContent = state.score;
+  waveEl.textContent  = state.wave;
+  ramEl.className   = 'stat-val' + (state.ram < 40 ? ' warn' : '');
+  livesEl.className = 'stat-val' + (state.lives <= 3 ? ' danger' : state.lives <= 6 ? ' warn' : '');
+  const total = state.bugsThisWave || 1;
+  document.getElementById('prog-bugs').style.width = Math.min(100, state.bugsKilled / total * 100) + '%';
+  const lp = state.lives / 10 * 100;
+  const pb = document.getElementById('prog-lives');
+  pb.style.width = lp + '%';
+  pb.className = 'progress-fill' + (state.lives <= 3 ? ' red' : '');
+}
+
+// TOWERS / PLACEMENT
+function selectTower(type) {
+  if (state.gameOver) return;
+  state.selectedTowerType = type;
+  state.selectedTowerObj  = null;
+  document.getElementById('btn-sell').style.display = 'none';
+  document.querySelectorAll('.tower-card').forEach(c => c.classList.remove('selected'));
+  document.getElementById('card-' + type)?.classList.add('selected');
+  const def = TOWER_DEFS[type];
+  document.getElementById('selected-info').innerHTML = `
+    <div class="info-name">${def.badge} ${def.name}</div>
+    <div style="margin:6px 0; color:var(--text-dim); font-size:9px; line-height:1.8">${def.desc}</div>
+    <div class="info-stat">DMG: ${def.dmg}  |  RNG: ${def.range}</div>
+    <div class="info-stat">SPD: ${def.fireRate}t  |  SHOTS: ${def.multiShot}</div>
+    <div style="margin-top:6px; color:var(--yellow); font-size:10px">▣ Custo: ${def.cost} MB RAM</div>
+  `;
+}
+
+function deselectAll() {
+  state.selectedTowerType = null; state.selectedTowerObj = null;
+  document.querySelectorAll('.tower-card').forEach(c => c.classList.remove('selected'));
+  document.getElementById('btn-sell').style.display = 'none';
+  document.getElementById('selected-info').innerHTML = `<div style="color:var(--text-dim);font-size:10px">Nenhum nó selecionado.</div>`;
+}
+
+function placeTower(col, row) {
+  if (PATH_SET.has(`${col},${row}`)) { log('Caminho bloqueado!', 'warn'); return; }
+  if (state.towers.find(t => t.col===col && t.row===row)) { log('Slot ocupado!', 'warn'); return; }
+  const def = TOWER_DEFS[state.selectedTowerType];
+  if (state.ram < def.cost) { log('RAM insuficiente!', 'err'); return; }
+  state.ram -= def.cost;
+  const tower = { col, row, type: state.selectedTowerType, level: 1, id: ++state.towerIdCounter, cooldown: 0, x: col*CELL+CELL/2, y: row*CELL+CELL/2, path: null };
+  state.towers.push(tower);
+  log(`${def.name} instalado em [${col},${row}]`, 'ok');
+  updateUI();
+}
+
+function sellTower() {
+  if (!state.selectedTowerObj) return;
+  const t = state.selectedTowerObj; const def = TOWER_DEFS[t.type];
+  state.ram += Math.floor(def.cost * 0.5 * t.level);
+  state.towers = state.towers.filter(x => x !== t);
+  log(`${def.name} removido. RAM recuperada.`, 'warn');
+  deselectAll(); updateUI();
+}
+
+function clickTower(t) {
+  state.selectedTowerType = null; state.selectedTowerObj = t;
+  document.querySelectorAll('.tower-card').forEach(c => c.classList.remove('selected'));
+  document.getElementById('btn-sell').style.display = 'block';
+  const def = TOWER_DEFS[t.type];
+  const pathLabel = t.path ? ` — ${t.path}` : '';
+  document.getElementById('selected-info').innerHTML = `
+    <div class="info-name">${def.badge} ${def.name}${pathLabel}</div>
+    <div style="color:var(--yellow);font-size:10px;margin:4px 0">NÍVEL ${t.level}</div>
+    <div class="info-stat">DMG: ${def.dmg * t.level}  RNG: ${def.range + (t.level-1)*0.5}</div>
+    <div style="margin-top:8px;font-size:10px;color:var(--text-dim)">Clique em "Upgrade" para<br>completar o desafio lógico.</div>
+    ${t.level < 3 ? `<button class="btn btn-cyan" style="margin-top:8px;width:100%" onclick="openUpgradeModal()">⬆ UPGRADE (${def.cost} RAM)</button>` : '<div style="color:var(--green);font-size:10px;margin-top:8px">✓ NÍVEL MÁXIMO</div>'}
+  `;
+}
+
+// WAVES & SPAWN (HP curve: Base * 1.15^Wave)
+function startWave() {
+  if (state.waveActive || state.gameOver) return;
+  if (state.wave >= state.maxWaves) return;
+  state.wave++;
+  state.waveActive = true;
+  const count = 8 + state.wave * 4;
+  state.bugsThisWave = count; state.bugsKilled = 0;
+  state.bugSpawnQueue = [];
+  const hpScale = Math.pow(1.15, state.wave); // HP = Base * (1.15^Wave)
+  for (let i = 0; i < count; i++) {
+    const typeIdx = Math.floor(Math.random() * Math.min(state.wave + 1, BUG_TYPES.length));
+    const bt = BUG_TYPES[typeIdx];
+    const hpVal = Math.max(4, Math.floor(bt.hp * hpScale));
+    state.bugSpawnQueue.push({ ...bt, hp: hpVal, maxHp: hpVal });
+  }
+  state.spawnTimer = 0; document.getElementById('btn-wave').disabled = true;
+  log(`WAVE ${state.wave} iniciada — ${count} bugs (HP x${hpScale.toFixed(2)})`, 'info');
+}
+
+function spawnBugFromQueue() {
+  if (state.bugSpawnQueue.length === 0) return;
+  const item = state.bugSpawnQueue.shift();
+  const proto = {...item};
+  const startPx = PATH[0][0] * CELL + CELL/2;
+  const startPy = PATH[0][1] * CELL + CELL/2;
+  state.bugs.push({
+    ...proto,
+    pathIdx: 0,
+    x: startPx, y: startPy,
+    dead:false, reached:false, slow:0, slowTimer:0, boostTimer:0, _origSpeed: proto.speed, _boosted:false, id: Math.random()
+  });
+}
+
+// helper to spawn small bug by template (matches by type/tag/label)
+function spawnMiniAt(templateTag, x, y, pathIdx) {
+  const proto = BUG_TYPES.find(b => b.type === templateTag || b.tag === templateTag || b.label === templateTag);
+  if (!proto) return;
+  state.bugs.push({
+    ...proto,
+    pathIdx: pathIdx || 0,
+    x, y,
+    dead: false, reached:false,
+    slow:0, slowTimer:0, boostTimer:0, _origSpeed: proto.speed, _boosted:false,
+    id: Math.random()
+  });
+}
+
+// UPDATE (movement, towers, special behaviors, auto-start)
+function update() {
+  if (state.gameOver) return;
+  state.tick++;
+
+  if (state.waveActive && state.bugSpawnQueue.length > 0) {
+    state.spawnTimer--;
+    if (state.spawnTimer <= 0) {
+      spawnBugFromQueue();
+      state.spawnTimer = state.spawnInterval;
+    }
+  }
+
+  // move bugs (ENCRYPTOR immunity to slow, WORM boost timer)
+  for (const bug of state.bugs) {
+    if (bug.dead || bug.reached) continue;
+    if (bug.slowTimer > 0) bug.slowTimer--;
+    if (bug.boostTimer > 0) {
+      bug.boostTimer--;
+      if (bug.boostTimer === 0 && bug._origSpeed) { bug.speed = bug._origSpeed; bug._boosted = false; }
+    }
+
+    const slowFactor = (bug.slowTimer > 0 && bug.type !== 'ENCRYPTOR') ? (1 - (bug.slow || 0)) : 1;
+    const spd = (bug.speed || 0.6) * slowFactor * 1.5;
+
+    const nextIdx = bug.pathIdx + 1;
+    if (nextIdx >= PATH.length) {
+      bug.reached = true; state.lives--; updateUI(); addFloat(bug.x, bug.y, '-1 LIFE', '#ff2244');
+      if (state.lives <= 0) triggerGameOver();
+      continue;
+    }
+    const [nc, nr] = PATH[nextIdx];
+    const tx = nc*CELL + CELL/2, ty = nr*CELL + CELL/2;
+    const dx = tx - bug.x, dy = ty - bug.y; const dist = Math.sqrt(dx*dx + dy*dy);
+    if (dist < spd) { bug.x = tx; bug.y = ty; bug.pathIdx = nextIdx; } else { bug.x += dx/dist * spd; bug.y += dy/dist * spd; }
+  }
+
+  // tower attacks (apply path bonuses). special: WORM first-hit speed burst, ENCRYPTOR immune to slow, TROJAN spawn NULs on death
+  for (const tower of state.towers) {
+    tower.cooldown--;
+    if (tower.cooldown > 0) continue;
+    const base = TOWER_DEFS[tower.type];
+    const pathDef = (base.paths && tower.path) ? base.paths[tower.path] : {};
+    const effRange = (base.range + (pathDef.rangeBonus || 0) + (tower.level-1)*0.5) * CELL;
+    const effDmg   = (base.dmg + (pathDef.dmgBonus || 0)) * tower.level;
+    const effMulti = Math.max(1, base.multiShot + (pathDef.multiShotBonus || 0));
+    const effSlow  = Math.max(0, (base.slow || 0) + (pathDef.slowBonus || 0));
+    const effAoe   = Math.max(0, (base.aoe || 0) + (pathDef.aoeAdd || 0));
+
+    const targets = state.bugs.filter(b => !b.dead && !b.reached)
+      .map(b => ({ b, dist: Math.hypot(b.x - tower.x, b.y - tower.y) }))
+      .filter(o => o.dist <= effRange)
+      .sort((a,b) => a.b.pathIdx !== b.b.pathIdx ? b.b.pathIdx - a.b.pathIdx : a.dist - b.dist);
+
+    if (targets.length === 0) continue;
+
+    const shots = Math.min(effMulti, targets.length);
+    for (let i=0;i<shots;i++) {
+      const { b } = targets[i];
+      // WORM: first hit speed burst (+50%) por 2s
+      if (b.type === 'WORM' && !b._boosted) {
+        b._origSpeed = b.speed; b.speed = b.speed * 1.5; b.boostTimer = 120; b._boosted = true;
+        addFloat(b.x, b.y, 'SPEED↑', '#ffdd55');
+      }
+      let d = effDmg;
+      if (tower.type === 'firewall' && (b.tag === 'STRING' || b.tag === 'INTEGER')) d *= 2;
+      if (effAoe > 0) {
+        const aoeR = effAoe * CELL;
+        state.bugs.forEach(eb => {
+          if (eb.dead || eb.reached) return;
+          if (Math.hypot(eb.x - b.x, eb.y - b.y) <= aoeR) {
+            eb.hp -= d;
+            if (eb.hp <= 0) killBug(eb, tower);
+          }
+        });
+        addParticle(b.x, b.y, base.color, 'aoe', aoeR);
+      } else {
+        if (effSlow > 0 && b.type !== 'ENCRYPTOR') { b.slow = effSlow; b.slowTimer = 120; }
+        if (pathDef.paralyzeOnHit) { b.slowTimer = Math.max(b.slowTimer, pathDef.paralyzeOnHit); }
+        b.hp -= d;
+        if (b.hp <= 0) killBug(b, tower);
+      }
+
+      state.projectiles.push({ x: tower.x, y: tower.y, tx: b.x, ty: b.y, color: base.color, life: 8 });
+    }
+    tower.cooldown = Math.max(6, (base.fireRate - (pathDef.fireRateReduce || 0)));
+  }
+
+  // cleanup projectiles/particles/floats and remove dead/reached
+  state.projectiles = state.projectiles.filter(p => { p.life--; return p.life > 0; });
+  state.floatingTexts = state.floatingTexts.filter(f => { f.y -= 0.8; f.life--; f.alpha = f.life / f.maxLife; return f.life > 0; });
+  state.particles = state.particles.filter(p => { p.life--; p.x += p.vx; p.y += p.vy; p.alpha = p.life / p.maxLife; return p.life > 0; });
+  state.bugs = state.bugs.filter(b => !b.dead && !b.reached);
+
+  // check wave end & auto-start logic (3s wait)
+  if (state.waveActive && state.bugSpawnQueue.length === 0 && state.bugs.length === 0) {
+    state.waveActive = false; document.getElementById('btn-wave').disabled = false;
+    log(`Wave ${state.wave} concluída! +20 RAM`, 'info'); state.ram += 20; state.score += 100 * state.wave; updateUI();
+    if (state.wave >= state.maxWaves) { setTimeout(()=>triggerWin(), 500); return; }
+    if (state.autoStart && state.wave < state.maxWaves) {
+      setTimeout(() => { if (!state.waveActive && !state.gameOver) startWave(); }, 3000);
+    }
+  }
+}
+
+// KILL BUG (trojan spawn NULs)
+function killBug(bug, tower) {
+  if (bug.dead) return;
+  bug.dead = true; state.bugsKilled++; state.ram += bug.ram; state.score += bug.ram * 5;
+  addFloat(bug.x, bug.y, `+${bug.ram}MB`, '#00ff41'); addParticle(bug.x, bug.y, bug.color, 'burst'); updateUI();
+  if (bug.type === 'TROJAN') {
+    // spawn 2 NUL small bugs
+    spawnMiniAt('NUL', bug.x - 8, bug.y + 4, bug.pathIdx);
+    spawnMiniAt('NUL', bug.x + 8, bug.y - 4, bug.pathIdx);
+    log('TROJAN liberou 2 NULs!', 'warn');
+  }
+}
+
+function addFloat(x, y, text, color) { state.floatingTexts.push({ x, y, text, color, life: 50, maxLife: 50, alpha: 1 }); }
+function addParticle(x, y, color, type, radius=0) {
+  if (type === 'aoe') { state.particles.push({ x, y, vx:0, vy:0, color, life:20, maxLife:20, alpha:1, type:'aoe', radius }); return; }
+  for (let i=0;i<8;i++) { const ang = Math.random()*Math.PI*2; const spd = 1+Math.random()*2; state.particles.push({ x, y, vx:Math.cos(ang)*spd, vy:Math.sin(ang)*spd, color, life:25, maxLife:25, alpha:1, type:'dot' }); }
+}
+
+// DRAW (mantém estilo retro/cyberpunk)
+function draw() {
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  ctx.strokeStyle = '#1a1a1a'; ctx.lineWidth = 1;
+  for (let c=0;c<=COLS;c++) { ctx.beginPath(); ctx.moveTo(c*CELL,0); ctx.lineTo(c*CELL,canvas.height); ctx.stroke(); }
+  for (let r=0;r<=ROWS;r++) { ctx.beginPath(); ctx.moveTo(0,r*CELL); ctx.lineTo(canvas.width,r*CELL); ctx.stroke(); }
+
+  for (let i=0;i<PATH.length;i++) {
+    const [c,r] = PATH[i];
+    const alpha = 0.7 - i/PATH.length*0.4;
+    ctx.fillStyle = `rgba(0,40,10,${alpha})`; ctx.fillRect(c*CELL+1, r*CELL+1, CELL-2, CELL-2);
+    if (i < PATH.length-1) { const [nc,nr] = PATH[i+1]; ctx.strokeStyle = 'rgba(0,100,30,0.4)'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(c*CELL+CELL/2, r*CELL+CELL/2); ctx.lineTo(nc*CELL+CELL/2, nr*CELL+CELL/2); ctx.stroke(); }
+  }
+  const [sc,sr] = PATH[0]; const [ec,er] = PATH[PATH.length-1];
+  ctx.fillStyle = '#00ff41'; ctx.font = '9px JetBrains Mono'; ctx.textAlign = 'center'; ctx.fillText('ENTRY', sc*CELL+CELL/2, sr*CELL-4);
+  ctx.fillStyle = '#ff2244'; ctx.fillText('CORE', ec*CELL+CELL/2, er*CELL-4);
+
+  for (const p of state.particles) { if (p.type === 'aoe') { ctx.beginPath(); ctx.arc(p.x, p.y, p.radius * (1 - p.alpha * 0.5), 0, Math.PI*2); ctx.strokeStyle = p.color; ctx.lineWidth = 2; ctx.stroke(); } else { ctx.beginPath(); ctx.arc(p.x, p.y, 2, 0, Math.PI*2); ctx.fillStyle = p.color; ctx.fill(); } }
+
+  for (const tower of state.towers) {
+    const def = TOWER_DEFS[tower.type]; const pathDef = def.paths && tower.path ? def.paths[tower.path] : null;
+    const x = tower.col * CELL, y = tower.row * CELL; const sel = state.selectedTowerObj === tower;
+    const visColor = pathDef && pathDef.color ? pathDef.color : def.color;
+    const visColor2 = pathDef && pathDef.color2 ? pathDef.color2 : def.color2;
+    const visSymbol = pathDef && pathDef.symbol ? pathDef.symbol : def.symbol;
+    if (sel) {
+      const range = ((def.range + (pathDef && pathDef.rangeBonus ? pathDef.rangeBonus : 0)) + (tower.level-1)*0.5) * CELL;
+      ctx.beginPath(); ctx.arc(tower.x, tower.y, range, 0, Math.PI*2); ctx.strokeStyle = visColor + '44'; ctx.lineWidth = 1; ctx.stroke(); ctx.fillStyle = visColor + '08'; ctx.fill();
+    }
+    ctx.fillStyle = sel ? visColor2 : '#0e1a0e'; ctx.strokeStyle = sel ? visColor : visColor + '88'; ctx.lineWidth = sel ? 2 : 1; roundRect(ctx, x+4, y+4, CELL-8, CELL-8, 4); ctx.fill(); ctx.stroke();
+    for (let l=0;l<tower.level;l++) { ctx.fillStyle = visColor; ctx.fillRect(x+6+l*6, y+6, 4, 3); }
+    ctx.fillStyle = sel ? visColor : visColor + 'cc'; ctx.font = `bold 16px JetBrains Mono`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(visSymbol, tower.x, tower.y);
+    ctx.font = '7px JetBrains Mono'; ctx.fillStyle = visColor + '99'; ctx.fillText(def.badge, tower.x, y+CELL-7);
+  }
+
+  for (const p of state.projectiles) { ctx.beginPath(); ctx.moveTo(p.x, p.y); ctx.lineTo(p.tx, p.ty); ctx.strokeStyle = p.color + 'cc'; ctx.lineWidth = 2; ctx.stroke(); ctx.beginPath(); ctx.arc(p.tx, p.ty, 3, 0, Math.PI*2); ctx.fillStyle = p.color; ctx.fill(); }
+
+  for (const bug of state.bugs) {
+    const s=14; const isSlowed = bug.slowTimer > 0;
+    ctx.shadowColor = bug.color; ctx.shadowBlur  = isSlowed ? 4 : 10;
+    ctx.fillStyle = isSlowed ? '#333' : bug.color + '33'; ctx.strokeStyle = isSlowed ? '#ffe60088' : bug.color; ctx.lineWidth = 1.5;
+    ctx.fillRect(bug.x-s/2, bug.y-s/2, s, s); ctx.strokeRect(bug.x-s/2, bug.y-s/2, s, s);
+    ctx.shadowBlur = 0;
+    ctx.fillStyle = isSlowed ? '#ffe600' : bug.color; ctx.font = 'bold 8px JetBrains Mono'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText(bug.label || bug.type, bug.x, bug.y);
+    const bw=20, bh=3; ctx.fillStyle='#111'; ctx.fillRect(bug.x-bw/2, bug.y+s/2+2, bw, bh);
+    ctx.fillStyle = bug.hp / (bug.maxHp||bug.hp) > 0.5 ? '#00ff41' : bug.hp / (bug.maxHp||bug.hp) > 0.25 ? '#ffe600' : '#ff2244';
+    ctx.fillRect(bug.x-bw/2, bug.y+s/2+2, bw * (bug.hp/(bug.maxHp||bug.hp)), bh);
+  }
+
+  for (const f of state.floatingTexts) { ctx.globalAlpha = f.alpha; ctx.fillStyle = f.color; ctx.font = 'bold 11px JetBrains Mono'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(f.text, f.x, f.y); } ctx.globalAlpha = 1;
+  if (state.selectedTowerType && state.cursorCell) {
+    const [cc, cr] = state.cursorCell; const canPlace = !PATH_SET.has(`${cc},${cr}`) && !state.towers.find(t=>t.col===cc&&t.row===cr);
+    ctx.fillStyle = canPlace ? 'rgba(0,255,65,0.15)' : 'rgba(255,34,68,0.15)'; ctx.strokeStyle = canPlace ? '#00ff4188' : '#ff224488'; ctx.lineWidth = 1;
+    ctx.fillRect(cc*CELL, cr*CELL, CELL, CELL); ctx.strokeRect(cc*CELL, cr*CELL, CELL, CELL);
+  }
+  for (let y=0;y<canvas.height;y+=4) { ctx.fillStyle = 'rgba(0,0,0,0.04)'; ctx.fillRect(0, y, canvas.width, 1); }
+}
+
+function roundRect(ctx, x, y, w, h, r) { ctx.beginPath(); ctx.moveTo(x+r, y); ctx.lineTo(x+w-r, y); ctx.arcTo(x+w,y,x+w,y+r,r); ctx.lineTo(x+w, y+h-r); ctx.arcTo(x+w,y+h,x+w-r,y+h,r); ctx.lineTo(x+r, y+h); ctx.arcTo(x,y+h,x,y+h-r,r); ctx.lineTo(x, y+r); ctx.arcTo(x,y,x+r,y,r); ctx.closePath(); }
+
+// GAME LOOP / INPUT
+function loop() { update(); draw(); requestAnimationFrame(loop); }
+canvas.addEventListener('mousemove', e => { const rect = canvas.getBoundingClientRect(); const mx = e.clientX - rect.left; const my = e.clientY - rect.top; state.cursorCell = [Math.floor(mx / CELL), Math.floor(my / CELL)]; });
+canvas.addEventListener('mouseleave', () => { state.cursorCell = null; });
+canvas.addEventListener('click', e => { if (state.gameOver) return; const rect = canvas.getBoundingClientRect(); const mx = e.clientX - rect.left; const my = e.clientY - rect.top; const col = Math.floor(mx / CELL); const row = Math.floor(my / CELL); const existing = state.towers.find(t => t.col===col && t.row===row); if (existing) { clickTower(existing); return; } if (state.selectedTowerType) placeTower(col, row); });
+
+// UPGRADE MODAL (fluxo com escolha de caminho e desafios LV1..LV3)
+let currentChallenge = null; let upgradeAnswered = false;
+function openUpgradeModal() {
+  if (!state.selectedTowerObj) return; const t = state.selectedTowerObj; const def = TOWER_DEFS[t.type]; if (t.level >= 3) return; if (state.ram < def.cost) { log('RAM insuficiente para upgrade!', 'err'); return; }
+  upgradeAnswered = false; state.pendingUpgradePath = null; document.getElementById('modal-feedback').className = ''; document.getElementById('modal-feedback').textContent = ''; document.getElementById('upgrade-modal').classList.add('visible');
+  if (t.level === 1 && def.paths && Object.keys(def.paths).length >= 2) {
+    document.getElementById('modal-title').textContent = `Escolha o Caminho — ${def.name}`; document.getElementById('modal-sub').textContent = `Selecione uma especialização para ${def.name} (isso muda atributos e tipo de desafio).`;
+    const row = document.getElementById('modal-options'); row.innerHTML = '';
+    Object.keys(def.paths).forEach(key => { const p = def.paths[key]; const btn = document.createElement('button'); btn.className = 'option-btn'; btn.textContent = `${p.name} — ${p.desc}`; btn.onclick = () => { state.pendingUpgradePath = key; presentChallengeFor(t.type, key, 2, def); }; row.appendChild(btn); });
+    document.getElementById('modal-challenge').innerHTML = `<div style="font-size:11px;color:var(--text-dim);margin-bottom:8px">Escolha um caminho para prosseguir ao desafio.</div>`; return;
+  }
+  const chosenPath = t.path || (Object.keys(def.paths || {})[0] || null); const targetLevel = t.level + 1; presentChallengeFor(t.type, chosenPath, targetLevel, def);
+}
+
+function presentChallengeFor(type, pathKey, targetLevel, def) {
+  const bank = (UPGRADE_CHALLENGES[type] && pathKey && UPGRADE_CHALLENGES[type][pathKey] && UPGRADE_CHALLENGES[type][pathKey][targetLevel]) || null;
+  let ch = null;
+  if (bank && bank.length > 0) {
+    ch = bank[Math.floor(Math.random() * bank.length)];
+    document.getElementById('modal-title').textContent = `UPGRADE: ${def.name} → LVL ${targetLevel}`; document.getElementById('modal-sub').textContent = `Responda para desbloquear (custo: ${def.cost} MB RAM).`;
+    document.getElementById('modal-challenge').innerHTML = `<div style="font-size:13px;color:var(--text);line-height:1.6">${ch.prompt}</div>`;
+    const row = document.getElementById('modal-options'); row.innerHTML = ''; const opts = [...ch.options].sort(()=>Math.random()-0.5);
+    opts.forEach(o=>{ const btn = document.createElement('button'); btn.className = 'option-btn'; btn.textContent = o; btn.onclick = () => answerChallenge(o, btn, ch, type, pathKey); row.appendChild(btn); });
+    currentChallenge = ch;
+  } else {
+    document.getElementById('modal-challenge').innerHTML = `<div style="font-size:12px;color:var(--text-dim)">Desafio indisponível para este caminho. Tente novamente.</div>`; document.getElementById('modal-options').innerHTML = '';
+  }
+}
+
+function answerChallenge(answer, btn, challenge=null, type=null, pathKey=null) {
+  if (upgradeAnswered) return; upgradeAnswered = true; const fb = document.getElementById('modal-feedback');
+  const ch = challenge || currentChallenge || currentChallenge; const correct = ch ? ch.correct : (currentChallenge ? currentChallenge.correct : null);
+  if (answer === correct) {
+    btn.classList.add('correct'); fb.className = 'ok'; fb.textContent = `✓ CORRETO! ${ch && ch.explain ? ch.explain : ''}`;
+    const t = state.selectedTowerObj; const def = TOWER_DEFS[t.type];
+    state.ram -= def.cost; t.level++;
+    if (state.pendingUpgradePath) { t.path = state.pendingUpgradePath; state.pendingUpgradePath = null; log(`${def.name} especializado em ${t.path}`, 'info'); } else if (pathKey) { t.path = pathKey; }
+    state.score += 50; updateUI(); log(`${def.name} upgrade → Nível ${t.level}!`, 'info'); clickTower(t); setTimeout(closeModal, 1400);
+  } else {
+    btn.classList.add('wrong'); fb.className = 'fail'; fb.textContent = `✗ ERRADO. Resposta correta: ${correct}. ${ch && ch.explain ? ch.explain : ''}`;
+    document.querySelectorAll('.option-btn').forEach(b => { if (b.textContent === correct) b.classList.add('correct'); });
+    state.pendingUpgradePath = null; setTimeout(closeModal, 2200);
+  }
+}
+function closeModal() { document.getElementById('upgrade-modal').classList.remove('visible'); state.pendingUpgradePath = null; }
+
+// GAME OVER / WIN / RESET
+function triggerGameOver() { state.gameOver = true; document.getElementById('overlay-title').textContent = 'GAME_OVER'; document.getElementById('overlay-title').className = 'lose'; document.getElementById('overlay-msg').textContent = 'SISTEMA COMPROMETIDO — REINICIANDO...'; document.getElementById('final-score').textContent = state.score; document.getElementById('overlay').classList.add('visible'); }
+function triggerWin() { state.gameOver = true; document.getElementById('overlay-title').textContent = 'SISTEMA PROTEGIDO'; document.getElementById('overlay-title').className = 'win'; document.getElementById('overlay-msg').textContent = 'TODOS OS BUGS ELIMINADOS. ACESSO GARANTIDO.'; document.getElementById('final-score').textContent = state.score; document.getElementById('overlay').classList.add('visible'); }
+function resetGame() { document.getElementById('overlay').classList.remove('visible'); document.getElementById('log-box').innerHTML = ''; initState(); updateUI(); deselectAll(); document.getElementById('btn-wave').disabled = false; log('Sistema reiniciado. Boa sorte.', 'info'); }
+
+// INIT
+updateUI(); document.getElementById('btn-wave').disabled = true; log('CODE DEFENDER v2.2 inicializado.', 'info'); log('Abra START_SESSION para iniciar.', 'ok'); loop();
+</script>
+</body>
+</html>
