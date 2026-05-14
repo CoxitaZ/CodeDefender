@@ -72,11 +72,13 @@
 
   #home-box {
     position: relative; z-index: 2;
-    width: 640px; max-width: 96vw;
+    width: 980px; max-width: 96vw;
+    max-height: 94vh;
     background: rgba(5,5,12,0.96);
     border: 1px solid var(--green-dim);
     border-radius: 2px;
     padding: 0;
+    overflow: hidden;
     box-shadow: 0 0 60px rgba(0,255,65,0.15), 0 0 120px rgba(0,255,65,0.05), inset 0 0 40px rgba(0,255,65,0.02);
   }
 
@@ -129,6 +131,63 @@
 
   .home-body {
     padding: 24px 36px 28px;
+    display: grid;
+    grid-template-columns: minmax(0, 1.1fr) minmax(280px, 0.9fr);
+    gap: 20px;
+    overflow: auto;
+    max-height: calc(94vh - 164px);
+  }
+
+  .home-left, .home-right { min-width: 0; }
+
+  .scoreboard-panel {
+    border: 1px solid var(--border-cyan);
+    background: linear-gradient(180deg, rgba(0,229,255,0.05), rgba(0,255,65,0.025));
+    padding: 14px;
+    min-height: 100%;
+    box-shadow: inset 0 0 28px rgba(0,229,255,0.03);
+  }
+  .scoreboard-title {
+    font-family: 'Orbitron', sans-serif;
+    color: var(--cyan);
+    font-size: 16px;
+    letter-spacing: 3px;
+    margin-bottom: 10px;
+    text-shadow: var(--cyan-glow);
+  }
+  .scoreboard-sub {
+    color: var(--text-dim);
+    font-size: 9px;
+    line-height: 1.7;
+    margin-bottom: 12px;
+  }
+  .score-row {
+    display: grid;
+    grid-template-columns: 28px minmax(0, 1fr) 76px;
+    align-items: center;
+    gap: 8px;
+    min-height: 30px;
+    border-top: 1px solid rgba(0,229,255,0.08);
+    color: var(--text);
+    font-size: 10px;
+  }
+  .score-row:first-child { border-top-color: rgba(0,255,65,0.18); }
+  .score-rank { color: var(--green); font-weight: 800; }
+  .score-player {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .score-meta { color: var(--text-dim); font-size: 8px; margin-top: 2px; }
+  .score-points { color: var(--cyan); text-align: right; font-weight: 800; }
+  .score-empty {
+    border: 1px dashed var(--border);
+    color: var(--text-dim);
+    font-size: 10px;
+    line-height: 1.8;
+    padding: 18px 12px;
+    margin-top: 12px;
+    text-align: center;
   }
 
   .home-section-label {
@@ -401,6 +460,18 @@
   }
   #modal-feedback.ok { border-color: var(--green); color: var(--green); background: #001a00; }
   #modal-feedback.fail { border-color: var(--red); color: var(--red); background: #1a0005; }
+  #modal-feedback strong { color: var(--cyan); }
+  .challenge-code {
+    margin-top: 8px;
+    padding: 9px 10px;
+    background: #030608;
+    border: 1px solid var(--border-cyan);
+    color: var(--cyan);
+    font-size: 10px;
+    line-height: 1.6;
+    white-space: pre-wrap;
+    user-select: text;
+  }
   .modal-actions { display: flex; gap: 8px; justify-content: flex-end; }
 
   /* MALWARE POPUP */
@@ -467,6 +538,44 @@
   #overlay-score { font-size: 20px; color: var(--cyan); letter-spacing: 4px; }
   #overlay-stats { font-size: 10px; color: var(--text-dim); line-height: 2; text-align: center; margin-top: 8px; }
 
+  /* CONFIRM MODAL */
+  #confirm-modal {
+    display: none; position: fixed; inset: 0;
+    z-index: 220;
+    background: rgba(0,0,0,0.78);
+    align-items: center; justify-content: center;
+  }
+  #confirm-modal.visible { display: flex; }
+  #confirm-box {
+    width: 430px; max-width: 92vw;
+    background: #07070f;
+    border: 1px solid var(--red);
+    padding: 22px 24px;
+    box-shadow: 0 0 46px rgba(255,34,68,0.18), inset 0 0 28px rgba(0,229,255,0.03);
+  }
+  #confirm-title {
+    font-family: 'Orbitron', sans-serif;
+    color: var(--red);
+    letter-spacing: 3px;
+    font-size: 16px;
+    margin-bottom: 10px;
+    text-shadow: 0 0 18px rgba(255,34,68,0.55);
+  }
+  #confirm-msg {
+    color: var(--text-dim);
+    font-size: 11px;
+    line-height: 1.8;
+    margin-bottom: 18px;
+  }
+
+  @media (max-width: 820px) {
+    #home-box { width: 96vw; }
+    .home-header { padding: 24px 22px 20px; }
+    .home-title { font-size: 26px; }
+    .home-title .breach { font-size: 12px; letter-spacing: 5px; }
+    .home-body { grid-template-columns: 1fr; padding: 18px; }
+  }
+
   /* SCANLINES */
   #scanlines {
     pointer-events: none; position: fixed; inset: 0; z-index: 999;
@@ -519,6 +628,7 @@
       <div class="home-sub">&gt; INITIALIZE DEFENSE PROTOCOL — AUTHENTICATE TO CONTINUE _</div>
     </div>
     <div class="home-body">
+      <div class="home-left">
 
       <div class="term-block">
         <span class="t-cyan">[SYS]</span> Ameaças detectadas na rede corporativa.<br>
@@ -538,19 +648,19 @@
             <div class="diff-name">JUNIOR</div>
             <div class="diff-label">Fácil</div>
             <div class="diff-ram">300 MB</div>
-            <div class="diff-stat">+20% ganho RAM<br>Inimigos frágeis</div>
+            <div class="diff-stat">Score x1<br>Inimigos frágeis</div>
           </div>
           <div class="diff-card diff-normal selected" id="diff-normal" onclick="selectDiff('normal')">
             <div class="diff-name">PLENO</div>
             <div class="diff-label">Normal</div>
             <div class="diff-ram">200 MB</div>
-            <div class="diff-stat">Valores padrão<br>Balanceado</div>
+            <div class="diff-stat">Score x1.5<br>Balanceado</div>
           </div>
           <div class="diff-card diff-hard" id="diff-hard" onclick="selectDiff('hard')">
             <div class="diff-name">SENIOR</div>
             <div class="diff-label">Difícil</div>
             <div class="diff-ram">100 MB</div>
-            <div class="diff-stat">Ganho -30%<br>Bugs rápidos/resistentes</div>
+            <div class="diff-stat">Score x3<br>Bosses brutais</div>
           </div>
         </div>
       </div>
@@ -572,6 +682,17 @@
       <div class="home-actions">
         <button class="btn btn-red" style="padding:8px 20px" onclick="cancelSession()">ABORT</button>
         <button class="btn btn-cyan" style="padding:8px 24px;font-size:11px" onclick="startSession()">▶ INICIAR MISSÃO</button>
+      </div>
+      </div>
+
+      <div class="home-right">
+        <div class="scoreboard-panel">
+          <div class="scoreboard-title">TOP 10</div>
+          <div class="scoreboard-sub">
+            Melhores operadores locais. Senior multiplica pontos por 3x; vencer sem perder vida ativa PERFECT SYSTEM x1.5.
+          </div>
+          <div id="scoreboard-list"></div>
+        </div>
       </div>
     </div>
   </div>
@@ -687,7 +808,23 @@
     <div class="option-row" id="modal-options"></div>
     <div id="modal-feedback"></div>
     <div class="modal-actions">
-      <button class="btn btn-red" onclick="closeModal()">CANCELAR</button>
+      <button class="btn btn-red" id="modal-cancel" onclick="closeModal()">CANCELAR</button>
+      <button class="btn btn-cyan" id="modal-understood" onclick="closeModal()" style="display:none">ENTENDIDO</button>
+    </div>
+  </div>
+</div>
+
+<!-- EXIT CONFIRM MODAL -->
+<div id="confirm-modal">
+  <div id="confirm-box">
+    <div id="confirm-title">ABORTAR PARTIDA?</div>
+    <div id="confirm-msg">
+      A wave em andamento será encerrada e o progresso desta sessão será perdido.
+      Confirme apenas se quiser voltar ao menu principal.
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-cyan" onclick="closeExitConfirm()">CONTINUAR DEFESA</button>
+      <button class="btn btn-red" onclick="confirmExitToMenu()">SAIR DA PARTIDA</button>
     </div>
   </div>
 </div>
@@ -731,9 +868,9 @@ let PATH_SET = new Set(PATH.map(([c,r])=>`${c},${r}`));
 
 // ===== DIFFICULTY CONFIG =====
 const DIFF_CONFIG = {
-  easy:   { ram: 300, ramMult: 1.2, hpMult: 0.75, speedMult: 0.85, label: 'JUNIOR', cls: 'easy' },
-  normal: { ram: 200, ramMult: 1.0, hpMult: 1.0,  speedMult: 1.0,  label: 'PLENO',  cls: 'normal' },
-  hard:   { ram: 100, ramMult: 0.7, hpMult: 1.5,  speedMult: 1.25, label: 'SENIOR', cls: 'hard' }
+  easy:   { ram: 300, ramMult: 1.2, hpMult: 0.75, speedMult: 0.85, scoreMult: 1.0, label: 'JUNIOR', cls: 'easy' },
+  normal: { ram: 200, ramMult: 1.0, hpMult: 1.0,  speedMult: 1.0,  scoreMult: 1.5, label: 'PLENO',  cls: 'normal' },
+  hard:   { ram: 100, ramMult: 0.7, hpMult: 1.5,  speedMult: 1.25, scoreMult: 3.0, label: 'SENIOR', cls: 'hard' }
 };
 let selectedDiff = 'normal';
 let selectedMap  = 'standard';
@@ -754,6 +891,7 @@ function initState() {
     towerIdCounter: 0,
     selectedTowerType: null, selectedTowerObj: null,
     gameOver: false, won: false, tick: 0,
+    isPerfectRun: true, finalScore: 0, scoreFinalized: false,
     floatingTexts: [],
     pendingUpgradePath: null,
     autoStart: false,
@@ -762,12 +900,99 @@ function initState() {
     // boss
     currentBoss: null,
     // malware popups
-    popupCooldown: 0, activePopups: [],
+    popupCooldown: 0, activePopups: [], malwareDrainTicker: 0,
     // stats
     totalKills: 0, totalRamEarned: 0, wavesCompleted: 0,
   };
 }
 initState();
+
+const SCOREBOARD_KEY = 'codeDefenderTop10_v2';
+
+function addScore(basePoints) {
+  const dc = DIFF_CONFIG[state.difficulty] || DIFF_CONFIG.normal;
+  const points = Math.floor(basePoints * dc.scoreMult);
+  state.score += points;
+  return points;
+}
+
+function getWaveHpScale(wave = state.wave) {
+  return Math.pow(1.2, Math.floor(Math.max(0, wave - 1) / 2));
+}
+
+function getMalwareDrainPerSecond() {
+  return Math.round(2 + Math.max(0, state.wave - 1) * (23 / 9));
+}
+
+function escapeHTML(value) {
+  return String(value ?? '').replace(/[&<>"']/g, ch => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+  }[ch]));
+}
+
+function loadScores() {
+  try {
+    const raw = localStorage.getItem(SCOREBOARD_KEY);
+    const parsed = raw ? JSON.parse(raw) : [];
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
+
+function saveScores(scores) {
+  try { localStorage.setItem(SCOREBOARD_KEY, JSON.stringify(scores)); } catch {}
+}
+
+function qualifiesForScoreboard(score) {
+  const scores = loadScores();
+  return scores.length < 10 || score > Math.min(...scores.map(s => s.score || 0));
+}
+
+function recordScore(finalScore, won) {
+  if (!qualifiesForScoreboard(finalScore)) return false;
+  const dc = DIFF_CONFIG[state.difficulty] || DIFF_CONFIG.normal;
+  const entry = {
+    player: state.playerName || 'Anon',
+    score: finalScore,
+    difficulty: dc.label,
+    wave: state.wave,
+    won,
+    perfect: won && state.isPerfectRun,
+    date: new Date().toLocaleDateString('pt-BR')
+  };
+  const scores = [...loadScores(), entry]
+    .sort((a, b) => (b.score || 0) - (a.score || 0))
+    .slice(0, 10);
+  saveScores(scores);
+  renderScoreboard();
+  return true;
+}
+
+function renderScoreboard() {
+  const list = document.getElementById('scoreboard-list');
+  if (!list) return;
+  const scores = loadScores();
+  if (!scores.length) {
+    list.innerHTML = '<div class="score-empty">Nenhum registro ainda.<br>Defenda o sistema e grave seu nome no terminal.</div>';
+    return;
+  }
+  list.innerHTML = scores.map((s, i) => `
+    <div class="score-row">
+      <div class="score-rank">#${i + 1}</div>
+      <div>
+        <div class="score-player">${escapeHTML(s.player || 'Anon')}</div>
+        <div class="score-meta">${escapeHTML(s.difficulty || 'PLENO')} · W${s.wave || 0}${s.perfect ? ' · PERFECT' : ''}</div>
+      </div>
+      <div class="score-points">${Number(s.score || 0).toLocaleString('pt-BR')}</div>
+    </div>
+  `).join('');
+}
+
+function clearMalwarePopups() {
+  document.querySelectorAll('.malware-popup').forEach(p => p.remove());
+  state.activePopups = [];
+}
 
 // ===== TOWER DEFS (custos rebalanceados) =====
 const TOWER_DEFS = {
@@ -918,6 +1143,76 @@ const UPGRADE_CHALLENGES = {
   }
 };
 
+// ===== SIMPLIFIED EDUCATIONAL QUESTION BANK =====
+const EDU_CHALLENGES = {
+  firewall: {
+    IF_ELSE_BLOCK: {
+      2: [
+        { level:'basic', prompt:'Qual operador testa se um valor é maior que outro?', options:['>','<','===','!='], correct:'>', explain:'O operador > compara dois valores e retorna true quando o primeiro é maior.', code:'if (bug.hp > 50) {\n  firewall.block(bug);\n}' },
+        { level:'basic', prompt:'Qual bloco roda quando o if é falso?', options:['else','for','try','return'], correct:'else', explain:'else cria o caminho alternativo quando a condição do if não passa.', code:'if (safe) {\n  allow();\n} else {\n  block();\n}' }
+      ],
+      3: [
+        { level:'inter', prompt:'Qual operador exige duas condições verdadeiras?', options:['&&','||','!','??'], correct:'&&', explain:'&& é o “E lógico”: os dois lados precisam ser true.', code:'if (logged && hasToken) {\n  openPanel();\n}' },
+        { level:'inter', prompt:'Para testar igualdade de valor e tipo em JS, use:', options:['===','==','=','!=='], correct:'===', explain:'=== evita conversões automáticas e deixa a comparação mais previsível.', code:'if (role === "admin") {\n  grantAccess();\n}' }
+      ]
+    },
+    ELSE_IF_CHAIN: {
+      2: [
+        { level:'basic', prompt:'Como testar uma segunda condição depois do if?', options:['else if','repeat','catch','await'], correct:'else if', explain:'else if encadeia outra verificação antes do else final.', code:'if (risk > 80) {\n  block();\n} else if (risk > 40) {\n  scan();\n}' },
+        { level:'basic', prompt:'Qual estrutura é boa para comparar muitos casos fixos?', options:['switch','while','try','map'], correct:'switch', explain:'switch organiza várias opções conhecidas em blocos case.', code:'switch (type) {\n  case "virus": quarantine();\n  break;\n}' }
+      ],
+      3: [
+        { level:'inter', prompt:'Qual operador usa um valor padrão só quando há null/undefined?', options:['??','||','&&','!'], correct:'??', explain:'?? preserva valores válidos como 0 ou string vazia.', code:'const limit = config.limit ?? 10;\nscan(limit);' },
+        { level:'inter', prompt:'O operador ?. evita erro quando parte do objeto não existe.', options:['Verdadeiro','Falso','Só em CSS','Só em HTML'], correct:'Verdadeiro', explain:'?. interrompe o acesso e retorna undefined se encontrar null ou undefined.', code:'const city = user?.profile?.city;\nconsole.log(city);' }
+      ]
+    }
+  },
+  loop: {
+    WHILE_RECURSION: {
+      2: [
+        { level:'basic', prompt:'Qual loop roda enquanto uma condição for verdadeira?', options:['while','if','switch','catch'], correct:'while', explain:'while repete o bloco até a condição deixar de ser true.', code:'while (queue.length > 0) {\n  process(queue.shift());\n}' },
+        { level:'basic', prompt:'O que impede uma recursão infinita?', options:['caso base','console.log','CSS','parseInt'], correct:'caso base', explain:'O caso base é a condição que para as chamadas recursivas.', code:'function count(n) {\n  if (n === 0) return;\n  count(n - 1);\n}' }
+      ],
+      3: [
+        { level:'inter', prompt:'Qual palavra pula o restante da iteração atual?', options:['continue','break','throw','new'], correct:'continue', explain:'continue passa para a próxima volta do loop sem encerrar tudo.', code:'for (const bug of bugs) {\n  if (bug.safe) continue;\n  scan(bug);\n}' },
+        { level:'inter', prompt:'Qual palavra encerra um loop imediatamente?', options:['break','continue','await','case'], correct:'break', explain:'break sai do loop assim que a condição desejada aparece.', code:'for (const port of ports) {\n  if (port.open) break;\n}' }
+      ]
+    },
+    NESTED_FOR: {
+      2: [
+        { level:'basic', prompt:'Um for dentro de outro geralmente cresce como:', options:['O(n²)','O(1)','O(log n)','O(n)'], correct:'O(n²)', explain:'Dois loops aninhados multiplicam as passagens: n vezes n.', code:'for (const row of grid) {\n  for (const cell of row) {\n    scan(cell);\n  }\n}' },
+        { level:'basic', prompt:'Qual método percorre um array e cria outro?', options:['map','push','pop','typeof'], correct:'map', explain:'map transforma cada item e devolve um novo array.', code:'const ids = bugs.map(bug => bug.id);\nconsole.log(ids);' }
+      ],
+      3: [
+        { level:'inter', prompt:'Qual método filtra itens de um array?', options:['filter','join','slice','alert'], correct:'filter', explain:'filter mantém apenas os itens que passam no teste.', code:'const threats = packets.filter(p => p.bad);\nblock(threats);' },
+        { level:'inter', prompt:'Qual método soma/acumula valores de um array?', options:['reduce','find','includes','trim'], correct:'reduce', explain:'reduce carrega um acumulador de item em item.', code:'const total = bugs.reduce((sum, bug) => {\n  return sum + bug.hp;\n}, 0);' }
+      ]
+    }
+  },
+  debug: {
+    TRY_CATCH_SHIELD: {
+      2: [
+        { level:'basic', prompt:'Qual bloco captura erros de um try?', options:['catch','else','case','for'], correct:'catch', explain:'catch recebe a exceção lançada dentro do try.', code:'try {\n  deployPatch();\n} catch (err) {\n  rollback();\n}' },
+        { level:'basic', prompt:'finally executa mesmo se houver erro?', options:['Sim','Não','Só no Chrome','Só com loop'], correct:'Sim', explain:'finally roda após try/catch e é útil para limpeza.', code:'try {\n  connect();\n} finally {\n  closeConnection();\n}' }
+      ],
+      3: [
+        { level:'inter', prompt:'Como tratar erro ao usar await?', options:['try/catch','switch','for...in','CSS'], correct:'try/catch', explain:'await dentro de try permite capturar rejeições de Promises.', code:'try {\n  await scanNetwork();\n} catch (err) {\n  notify(err.message);\n}' },
+        { level:'inter', prompt:'throw serve para:', options:['lançar um erro','criar array','mudar cor','parar CSS'], correct:'lançar um erro', explain:'throw interrompe o fluxo e envia um erro para ser tratado.', code:'if (!token) {\n  throw new Error("Sem token");\n}' }
+      ]
+    },
+    BREAK_CONTINUE: {
+      2: [
+        { level:'basic', prompt:'continue em um loop faz:', options:['pular para a próxima volta','encerrar o app','criar função','salvar arquivo'], correct:'pular para a próxima volta', explain:'continue ignora o restante do bloco atual e segue o loop.', code:'for (const item of list) {\n  if (!item.active) continue;\n  run(item);\n}' },
+        { level:'basic', prompt:'break em um loop faz:', options:['sair do loop','repetir tudo','abrir modal','criar objeto'], correct:'sair do loop', explain:'break termina a repetição no ponto em que foi chamado.', code:'while (true) {\n  if (done) break;\n}' }
+      ],
+      3: [
+        { level:'inter', prompt:'Qual método encontra o primeiro item que passa no teste?', options:['find','filter','map','sort'], correct:'find', explain:'find retorna o primeiro item compatível e para a busca.', code:'const boss = bugs.find(bug => bug.isBoss);\nfocus(boss);' },
+        { level:'inter', prompt:'Qual método responde se algum item passa no teste?', options:['some','every','join','split'], correct:'some', explain:'some retorna true ao encontrar o primeiro item aprovado.', code:'const hasVirus = files.some(file => file.bad);\nalert(hasVirus);' }
+      ]
+    }
+  }
+};
+
 // ===== MALWARE POPUP TEMPLATES =====
 const POPUP_TEMPLATES = [
   {
@@ -1019,17 +1314,36 @@ function cancelSession() {
 
 function goToMenu(force = false) {
   if (!force && state.waveActive) {
-    if (!confirm('⚠ Tem certeza que quer sair? O progresso atual será perdido.')) return;
+    requestExitToMenu();
+    return;
   }
-  // clear popups
-  document.querySelectorAll('.malware-popup').forEach(p => p.remove());
+  clearMalwarePopups();
   state.gameOver = true;
   document.getElementById('overlay').classList.remove('visible');
+  document.getElementById('confirm-modal').classList.remove('visible');
   document.getElementById('home-overlay').style.display = 'flex';
   document.getElementById('player-name').value = state.playerName !== 'Anon' ? state.playerName : '';
   initState();
   updateUI();
+  renderScoreboard();
   log('Sessão encerrada. Retornando ao menu.', 'warn');
+}
+
+let exitConfirmWasPaused = false;
+function requestExitToMenu() {
+  exitConfirmWasPaused = gamePaused;
+  gamePaused = true;
+  document.getElementById('confirm-modal').classList.add('visible');
+}
+
+function closeExitConfirm() {
+  document.getElementById('confirm-modal').classList.remove('visible');
+  gamePaused = exitConfirmWasPaused;
+}
+
+function confirmExitToMenu() {
+  document.getElementById('confirm-modal').classList.remove('visible');
+  goToMenu(true);
 }
 
 // ===== LOG / UI =====
@@ -1165,7 +1479,7 @@ function startWave() {
   const bossDef = BOSS_DEFS.find(b => b.wave === state.wave);
 
   const count = 8 + state.wave * 3;
-  const hpScale = (1 + state.wave * 0.18) * dc.hpMult;
+  const hpScale = getWaveHpScale(state.wave) * dc.hpMult;
   const speedBoost = dc.speedMult;
   state.waveActive = true;
   state.bugsThisWave = count + (bossDef ? 1 : 0);
@@ -1182,12 +1496,14 @@ function startWave() {
 
   // Boss spawn (at middle of wave)
   if (bossDef) {
-    const bossHp = Math.floor(bossDef.hp * dc.hpMult);
+    const seniorBossMult = state.difficulty === 'hard' ? 1.5 : 1;
+    const bossHp = Math.floor(bossDef.hp * hpScale * seniorBossMult);
     const bossEntry = {
       ...bossDef, hp: bossHp, maxHp: bossHp,
       speed: bossDef.speed * speedBoost,
       isBoss: true, size: bossDef.size,
       dead: false, reached: false, slow:0, slowTimer:0, boostTimer:0,
+      slowResist: state.difficulty === 'hard' ? 0.55 : 0,
       _origSpeed: bossDef.speed * speedBoost, _boosted: false,
       abilityTimer: bossDef.abilityTimer,
       id: Math.random()
@@ -1195,16 +1511,16 @@ function startWave() {
     // Insert boss after 1/3 of queue
     const insertAt = Math.floor(count / 3);
     state.bugSpawnQueue.splice(insertAt, 0, bossEntry);
-    state.bugsThisWave++;
     document.getElementById('boss-bar').classList.add('visible');
     document.getElementById('boss-name').textContent = bossDef.name;
     document.getElementById('boss-bar-fill').style.width = '100%';
     document.getElementById('boss-hp-text').textContent = `${bossHp} HP`;
-    log(`⚠ BOSS WAVE! ${bossDef.name} se aproxima!`, 'boss');
+    log(`⚠ BOSS WAVE! ${bossDef.name} se aproxima${state.difficulty === 'hard' ? ' com blindagem Senior' : ''}!`, 'boss');
   }
 
   state.spawnTimer = 0;
   document.getElementById('btn-wave').disabled = true;
+  updateUI();
   log(`WAVE ${state.wave} iniciada — ${count} bugs (HP x${hpScale.toFixed(2)})`, 'info');
 
   // Trigger malware popups during waves
@@ -1236,11 +1552,14 @@ function spawnMiniAt(templateTag, x, y, pathIdx) {
   const proto = BUG_TYPES.find(b => b.type===templateTag||b.tag===templateTag||b.label===templateTag);
   if (!proto) return;
   const dc = DIFF_CONFIG[state.difficulty];
+  const hpScale = getWaveHpScale(state.wave) * dc.hpMult;
+  const hpVal = Math.floor(proto.hp * 0.6 * hpScale);
   state.bugs.push({
     ...proto, pathIdx: pathIdx||0, x, y,
     dead:false, reached:false, slow:0, slowTimer:0, boostTimer:0,
     _origSpeed: proto.speed, _boosted:false, id: Math.random(),
-    hp: Math.floor(proto.hp * 0.6), maxHp: Math.floor(proto.hp * 0.6)
+    hp: hpVal, maxHp: hpVal,
+    speed: proto.speed * dc.speedMult
   });
 }
 
@@ -1254,6 +1573,7 @@ function spawnMalwarePopup() {
   popup.className = 'malware-popup ' + tmpl.style;
   popup.dataset.reward = tmpl.reward;
   popup.dataset.penalty = tmpl.penalty;
+  popup.dataset.drain = getMalwareDrainPerSecond();
 
   const maxX = wRect.width - 270;
   const maxY = wRect.height - 180;
@@ -1269,6 +1589,7 @@ function spawnMalwarePopup() {
       <span class="popup-icon">${tmpl.icon}</span>
       <div class="popup-title-text">${tmpl.heading}</div>
       <div style="white-space:pre-line">${tmpl.body}</div>
+      <div style="color:var(--red);font-size:9px;margin-top:6px">DRENO: -${popup.dataset.drain} MB RAM/s</div>
       <div class="popup-fake-btn" data-action="fake">${tmpl.fakeBtn}</div>
     </div>
   `;
@@ -1288,12 +1609,15 @@ function spawnMalwarePopup() {
   // Body / fake button click — PENALTY
   const applyPenalty = (e) => {
     const penalty = popup.dataset.penalty;
+    const clickDrain = getMalwareDrainPerSecond();
+    state.ram = Math.max(0, state.ram - clickDrain);
+    addFloat(wRect.left + 200, wRect.top + 100, `-${clickDrain}MB`, '#ff2244');
     if (penalty === 'ram_leak') {
       state.ramLeakTimer = 300; // 5 seconds
-      log('⚠ RAM LEAK ativado! Perdendo recursos...', 'err');
+      log(`⚠ RAM LEAK ativado! Penalidade dinâmica: -${clickDrain} MB`, 'err');
     } else if (penalty === 'cpu_throttle') {
       state.cpuThrottleTimer = 300;
-      log('⚠ CPU THROTTLE! Range das torres reduzido!', 'err');
+      log(`⚠ CPU THROTTLE! Penalidade dinâmica: -${clickDrain} MB`, 'err');
     }
     popup.remove();
     state.activePopups = state.activePopups.filter(p => p !== popup);
@@ -1305,7 +1629,7 @@ function spawnMalwarePopup() {
 
   wrap.appendChild(popup);
   state.activePopups.push(popup);
-  log('⚠ MALWARE DETECTADO! Feche pelo X para ganhar RAM.', 'warn');
+  log(`⚠ MALWARE DETECTADO! Dreno ativo: -${popup.dataset.drain} MB/s por janela.`, 'warn');
 }
 
 // ===== UPDATE LOOP =====
@@ -1313,6 +1637,22 @@ let gamePaused = false;
 function update() {
   if (state.gameOver || gamePaused) return;
   state.tick++;
+
+  state.activePopups = state.activePopups.filter(p => p.isConnected);
+  if (state.activePopups.length > 0) {
+    state.malwareDrainTicker++;
+    if (state.malwareDrainTicker >= 60) {
+      state.malwareDrainTicker = 0;
+      const drain = getMalwareDrainPerSecond();
+      const totalDrain = drain * state.activePopups.length;
+      state.ram = Math.max(0, state.ram - totalDrain);
+      addFloat(COLS*CELL/2, ROWS*CELL/2 - 24, `-${totalDrain} RAM MALWARE`, '#ff2244');
+      if (state.ram <= 0) log('⚠ RAM zerada por pop-ups persistentes. Feche as janelas pelo X.', 'err');
+      updateUI();
+    }
+  } else {
+    state.malwareDrainTicker = 0;
+  }
 
   // RAM Leak effect
   if (state.ramLeakTimer > 0) {
@@ -1331,7 +1671,7 @@ function update() {
   }
 
   // Malware popup trigger
-  if (state.waveActive && state.activePopups.length < 2) {
+  if (state.waveActive && state.activePopups.length < 6) {
     state.popupCooldown--;
     if (state.popupCooldown <= 0) {
       spawnMalwarePopup();
@@ -1387,9 +1727,10 @@ function update() {
 
     const nextIdx = bug.pathIdx + 1;
     if (nextIdx >= PATH.length) {
-      bug.reached = true; state.lives--;
       const dmg = bug.isBoss ? 3 : 1;
-      state.lives = Math.max(0, state.lives - (dmg - 1));
+      bug.reached = true;
+      state.lives = Math.max(0, state.lives - dmg);
+      state.isPerfectRun = false;
       updateUI();
       addFloat(bug.x, bug.y, bug.isBoss ? '-3 LIVES' : '-1 LIFE', '#ff2244');
       if (state.lives <= 0) triggerGameOver();
@@ -1444,8 +1785,15 @@ function update() {
         });
         addParticle(b.x, b.y, base.color, 'aoe', aoeR);
       } else {
-        if (effSlow > 0 && b.type !== 'ENCRYPTOR') { b.slow=effSlow; b.slowTimer=120; }
-        if (pathDef.paralyzeOnHit) { b.slowTimer = Math.max(b.slowTimer, pathDef.paralyzeOnHit); }
+        if (effSlow > 0 && b.type !== 'ENCRYPTOR') {
+          const resist = b.isBoss ? (b.slowResist || 0) : 0;
+          b.slow = Math.max(0, effSlow * (1 - resist));
+          b.slowTimer = b.isBoss ? 75 : 120;
+        }
+        if (pathDef.paralyzeOnHit) {
+          const stunTime = b.isBoss ? Math.floor(pathDef.paralyzeOnHit * (1 - (b.slowResist || 0))) : pathDef.paralyzeOnHit;
+          b.slowTimer = Math.max(b.slowTimer, stunTime);
+        }
         b.hp -= d; if (b.hp <= 0) killBug(b, tower);
       }
       state.projectiles.push({ x:tower.x, y:tower.y, tx:b.x, ty:b.y, color:base.color, life:8 });
@@ -1468,10 +1816,7 @@ function update() {
     const dc = DIFF_CONFIG[state.difficulty];
     const waveBonus = Math.floor(25 * dc.ramMult);
     state.ram += waveBonus;
-    state.score += 100 * state.wave;
-    // Clear popups on wave end
-    document.querySelectorAll('.malware-popup').forEach(p => p.remove());
-    state.activePopups = [];
+    addScore(100 * state.wave);
     updateUI();
     log(`Wave ${state.wave} concluída! +${waveBonus} MB RAM`, 'info');
     if (state.wave >= state.maxWaves) { setTimeout(()=>triggerWin(), 500); return; }
@@ -1490,7 +1835,7 @@ function killBug(bug, tower) {
   const ramGain = Math.floor(bug.ram * dc.ramMult);
   state.ram += ramGain;
   state.totalRamEarned += ramGain;
-  state.score += bug.ram * 5 * (bug.isBoss ? 5 : 1);
+  addScore(bug.ram * 5 * (bug.isBoss ? 5 : 1));
   addFloat(bug.x, bug.y, `+${ramGain}MB`, '#00ff41');
   addParticle(bug.x, bug.y, bug.color, 'burst');
   updateUI();
@@ -1693,7 +2038,9 @@ function openUpgradeModal() {
   upgradeAnswered = false;
   state.pendingUpgradePath = null;
   document.getElementById('modal-feedback').className = '';
-  document.getElementById('modal-feedback').textContent = '';
+  document.getElementById('modal-feedback').innerHTML = '';
+  document.getElementById('modal-cancel').style.display = 'inline-block';
+  document.getElementById('modal-understood').style.display = 'none';
   document.getElementById('upgrade-modal').classList.add('visible');
 
   if (t.level === 1 && def.paths && Object.keys(def.paths).length >= 2) {
@@ -1718,7 +2065,7 @@ function openUpgradeModal() {
 }
 
 function presentChallengeFor(type, pathKey, targetLevel, def) {
-  const bank = UPGRADE_CHALLENGES[type]?.[pathKey]?.[targetLevel] || null;
+  const bank = EDU_CHALLENGES[type]?.[pathKey]?.[targetLevel] || UPGRADE_CHALLENGES[type]?.[pathKey]?.[targetLevel] || null;
   if (bank && bank.length > 0) {
     const ch = bank[Math.floor(Math.random() * bank.length)];
     currentChallenge = ch;
@@ -1745,38 +2092,43 @@ function presentChallengeFor(type, pathKey, targetLevel, def) {
   }
 }
 
+function renderChallengeExplanation(ch, isCorrect, penalty = 0) {
+  const code = ch.code ? `<pre class="challenge-code">${escapeHTML(ch.code)}</pre>` : '';
+  const status = isCorrect ? 'Resposta correta.' : `Resposta correta: <strong>${escapeHTML(ch.correct)}</strong>.`;
+  const penaltyText = penalty > 0 ? ` Penalidade: -${penalty} MB RAM.` : '';
+  return `${status}${penaltyText}<br>${escapeHTML(ch.explain || '')}${code}`;
+}
+
 function answerChallenge(answer, btn, challenge, type, pathKey) {
   if (upgradeAnswered) return;
   upgradeAnswered = true;
   const fb = document.getElementById('modal-feedback');
   const ch = challenge || currentChallenge;
+  document.querySelectorAll('.option-btn').forEach(b => { b.disabled = true; });
+  document.getElementById('modal-cancel').style.display = 'none';
+  document.getElementById('modal-understood').style.display = 'inline-block';
 
   if (answer === ch.correct) {
     btn.classList.add('correct');
     fb.className = 'ok';
-    fb.textContent = `✓ CORRETO! ${ch.explain || ''}`;
+    fb.innerHTML = renderChallengeExplanation(ch, true);
     const t = state.selectedTowerObj;
     const def = TOWER_DEFS[t.type];
     state.ram -= def.cost; t.level++;
     if (state.pendingUpgradePath) { t.path = state.pendingUpgradePath; state.pendingUpgradePath = null; }
     else if (pathKey) { t.path = pathKey; }
-    state.score += 75;
+    addScore(75);
     updateUI();
     log(`${def.name} upgrade → Nível ${t.level}!`, 'info');
     clickTower(t);
-    setTimeout(() => { closeModal(); }, 1400);
   } else {
     btn.classList.add('wrong');
     fb.className = 'fail';
-    // PENALTY: lose 50% of tower cost
-    const def = TOWER_DEFS[state.selectedTowerObj.type];
-    const penalty = Math.floor(def.cost * 0.5);
-    state.ram = Math.max(0, state.ram - penalty);
-    fb.textContent = `✗ ERRADO! Resposta: ${ch.correct}. Penalidade: -${penalty} MB RAM. ${ch.explain||''}`;
+    const penalty = 0;
+    fb.innerHTML = renderChallengeExplanation(ch, false, penalty);
     document.querySelectorAll('.option-btn').forEach(b => { if (b.textContent === ch.correct) b.classList.add('correct'); });
     state.pendingUpgradePath = null;
     updateUI();
-    setTimeout(() => { closeModal(); }, 2400);
   }
 }
 
@@ -1787,31 +2139,48 @@ function closeModal() {
 }
 
 // ===== GAME OVER / WIN / RESET =====
+function finalizeScore(won) {
+  if (state.scoreFinalized) return state.finalScore || state.score;
+  state.won = won;
+  const perfectMult = won && state.isPerfectRun ? 1.5 : 1;
+  const finalScore = Math.floor(state.score * perfectMult);
+  state.finalScore = finalScore;
+  state.score = finalScore;
+  state.scoreFinalized = true;
+  state.savedToTop10 = recordScore(finalScore, won);
+  updateUI();
+  return finalScore;
+}
+
 function triggerGameOver() {
   state.gameOver = true;
+  const finalScore = finalizeScore(false);
   document.getElementById('overlay-title').textContent = 'GAME_OVER';
   document.getElementById('overlay-title').className = 'lose';
   document.getElementById('overlay-msg').textContent = 'SISTEMA COMPROMETIDO — BREACH CONFIRMADO';
-  document.getElementById('final-score').textContent = state.score;
+  document.getElementById('final-score').textContent = finalScore;
   document.getElementById('overlay-stats').innerHTML = `
     Waves: ${state.wavesCompleted} / ${state.maxWaves}<br>
     Bugs eliminados: ${state.totalKills}<br>
-    RAM total coletado: ${state.totalRamEarned} MB
+    RAM total coletado: ${state.totalRamEarned} MB<br>
+    ${state.savedToTop10 ? 'Novo registro no Top 10 local!' : 'Score fora do Top 10 local.'}
   `;
   document.getElementById('overlay').classList.add('visible');
-  document.querySelector('.malware-popup')?.remove();
 }
 
 function triggerWin() {
   state.gameOver = true;
+  const finalScore = finalizeScore(true);
   document.getElementById('overlay-title').textContent = 'SISTEMA PROTEGIDO';
   document.getElementById('overlay-title').className = 'win';
   document.getElementById('overlay-msg').textContent = 'TODOS OS VETORES BLOQUEADOS. ACESSO GARANTIDO.';
-  document.getElementById('final-score').textContent = state.score;
+  document.getElementById('final-score').textContent = finalScore;
   document.getElementById('overlay-stats').innerHTML = `
     Waves concluídas: ${state.wavesCompleted} / ${state.maxWaves}<br>
     Bugs eliminados: ${state.totalKills}<br>
-    RAM coletado: ${state.totalRamEarned} MB
+    RAM coletado: ${state.totalRamEarned} MB<br>
+    Perfect System: ${state.isPerfectRun ? 'ATIVO (x1.5)' : 'inativo'}<br>
+    ${state.savedToTop10 ? 'Novo registro no Top 10 local!' : 'Score fora do Top 10 local.'}
   `;
   document.getElementById('overlay').classList.add('visible');
 }
@@ -1819,8 +2188,7 @@ function triggerWin() {
 function resetGame() {
   document.getElementById('overlay').classList.remove('visible');
   document.getElementById('log-box').innerHTML = '';
-  document.querySelector('.malware-popup')?.remove();
-  state.activePopups = [];
+  clearMalwarePopups();
   const dc = DIFF_CONFIG[state.difficulty];
   initState();
   state.difficulty = selectedDiff;
@@ -1841,6 +2209,7 @@ function toggleAutoStart() {
 
 // ===== INIT =====
 updateUI();
+renderScoreboard();
 document.getElementById('btn-wave').disabled = true;
 log('CODE DEFENDER: SYSTEM BREACH v3.0 inicializado.', 'info');
 log('Autentique-se no menu para iniciar a defesa.', 'ok');
