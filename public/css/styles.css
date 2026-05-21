@@ -1,7 +1,4 @@
-
-  400;600;700;800&family=Orbitron:wght@700;900&display=swap');
-
-  :root {
+:root {
     --bg: #050508;
     --green: #00ff41;
     --green-dim: #00882b;
@@ -741,17 +738,10 @@
   @keyframes catWalk { 0%,100%{transform:scaleY(1)} 50%{transform:scaleY(0.92)} }
 
 
-/* Extracted inline presentation helpers */
-#panel-shop, #modal-understood, #btn-sell { display: none; }
-#boss-bar-fill, #prog-lives { width: 100%; }
-#prog-bugs { width: 0%; }
+/* ===== FULL STACK AUTH ADDITIONS ===== */
 .auth-password { margin-top: 8px; }
 .auth-actions { display: flex; gap: 8px; margin-top: 8px; }
 .auth-actions .btn { flex: 1; padding: 8px 10px; font-size: 10px; }
-.auth-status { min-height: 18px; margin-top: 8px; font-size: 10px; color: var(--text-dim); }
-.auth-status.ok { color: var(--green); }
-.auth-status.err { color: var(--red); }
-.shop-item { border:1px solid var(--border); padding:10px; margin-bottom:8px; background:#0a0a10; cursor:pointer; }
-.shop-cost { font-size:10px; color:var(--yellow); }
-.shop-level, .shop-status { font-size:8px; color:var(--cyan); margin-top:3px; }
-#shop-msg { font-size:10px; min-height:18px; padding:5px 8px; border-left:2px solid transparent; margin-top:8px; }
+.auth-status { min-height: 18px; margin-top: 8px; font-size: 10px; color: var(--text-dim); line-height: 1.4; }
+.auth-status.ok { color: var(--green); text-shadow: 0 0 8px rgba(0,255,65,0.35); }
+.auth-status.err { color: var(--red); text-shadow: 0 0 8px rgba(255,34,68,0.35); }

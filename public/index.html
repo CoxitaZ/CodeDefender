@@ -40,7 +40,7 @@
         <div class="home-section-label">&gt; MODO DE JOGO</div>
         <div class="mode-toggle-wrap">
           <div class="mode-toggle-header">
-            <div>Selecione o protocolo de operação</div>
+            <div style="font-size:10px;color:var(--text)">Selecione o protocolo de operação</div>
             <div class="mode-switch" data-action="toggleGameMode()">
               <div id="mode-switch-track" class="mode-switch-track">
                 <div class="mode-switch-thumb"></div>
@@ -50,7 +50,7 @@
           <div class="mode-switch-labels">
             <span class="edu">■ EDUCATIVO — Responda perguntas p/ upgrade | Score 100%</span>
           </div>
-          <div class="mode-switch-labels">
+          <div class="mode-switch-labels" style="margin-top:3px">
             <span class="arc" id="arc-label-text">□ ARCADE — Upgrades instantâneos | Score 60%</span>
           </div>
           <div class="mode-edu-text" id="mode-edu-indicator">▶ MODO EDUCATIVO (padrão) — Upgrades exigem resposta correta. Pontuação integral.</div>
@@ -109,68 +109,68 @@
       </div>
 
       <div class="home-actions">
-        <button class="btn btn-red" data-action="cancelSession()">ABORT</button>
-        <button class="btn btn-cyan" data-action="startSession()">▶ INICIAR MISSÃO</button>
+        <button class="btn btn-red" style="padding:8px 20px" data-action="cancelSession()">ABORT</button>
+        <button class="btn btn-cyan" style="padding:8px 24px;font-size:11px" data-action="startSession()">▶ INICIAR MISSÃO</button>
       </div>
       </div>
 
       <div class="home-right">
         <!-- TABS -->
-        <div>
-          <button id="tab-scores" data-action="switchHomeTab('scores')">TOP 10</button>
-          <button id="tab-shop" data-action="switchHomeTab('shop')">LOJA ⬡</button>
+        <div style="display:flex;gap:0;margin-bottom:0;border-bottom:1px solid var(--border-cyan)">
+          <button id="tab-scores" data-action="switchHomeTab('scores')" style="flex:1;padding:7px 4px;font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:2px;border:none;border-bottom:2px solid var(--cyan);background:rgba(0,229,255,0.08);color:var(--cyan);cursor:pointer">TOP 10</button>
+          <button id="tab-shop" data-action="switchHomeTab('shop')" style="flex:1;padding:7px 4px;font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:2px;border:none;border-bottom:2px solid transparent;background:transparent;color:var(--text-dim);cursor:pointer">LOJA ⬡</button>
         </div>
 
         <!-- SCOREBOARD PANEL -->
-        <div id="panel-scores" class="scoreboard-panel">
-          <div class="scoreboard-sub">
+        <div id="panel-scores" class="scoreboard-panel" style="border-top:none">
+          <div class="scoreboard-sub" style="margin-top:10px">
             Senior x3 | Perfect x1.5 | Arcade x0.6 | Wave 21: TERMINAL_ZERO
           </div>
           <div id="scoreboard-list"></div>
         </div>
 
         <!-- SHOP PANEL -->
-        <div id="panel-shop">
-          <div>CENTRAL DE UPGRADES</div>
-          <div>&amp; COSMÉTICOS</div>
-          <div id="shop-points-display">
-            ⬡ MOEDAS: <span id="shop-pts">0</span> &nbsp;<span>+50 por Boss | +150 Terminal Zero</span>
+        <div id="panel-shop" style="display:none;padding:14px;border:1px solid var(--border-cyan);border-top:none;background:linear-gradient(180deg,rgba(0,229,255,0.04),rgba(0,255,65,0.02));min-height:100%">
+          <div style="font-family:'Orbitron',sans-serif;color:var(--cyan);font-size:13px;letter-spacing:3px;margin-bottom:4px;text-shadow:var(--cyan-glow)">CENTRAL DE UPGRADES</div>
+          <div style="font-size:8px;color:var(--text-dim);letter-spacing:2px;margin-bottom:12px">&amp; COSMÉTICOS</div>
+          <div id="shop-points-display" style="font-size:11px;color:var(--yellow);margin-bottom:14px;padding:6px 10px;border:1px solid rgba(255,230,0,0.3);background:rgba(255,230,0,0.05)">
+            ⬡ MOEDAS: <span id="shop-pts">0</span> &nbsp;<span style="font-size:9px;color:var(--text-dim)">+50 por Boss | +150 Terminal Zero</span>
           </div>
 
           <!-- UPGRADES -->
-          <div>&gt; UPGRADES PERMANENTES</div>
+          <div style="font-size:9px;letter-spacing:3px;color:var(--text-dim);margin-bottom:8px;padding-bottom:4px;border-bottom:1px solid var(--border)">&gt; UPGRADES PERMANENTES</div>
 
-          <div class="shop-item" id="shop-dmg" data-action="buyShopItem('dmg')">
-            <div>
-              <div>▲ +7% Dano Global</div>
-              <div id="shop-dmg-cost">500 ⬡</div>
+          <div class="shop-item" id="shop-dmg" style="border:1px solid var(--border);padding:10px;margin-bottom:8px;background:#0a0a10;cursor:pointer" data-action="buyShopItem('dmg')">
+            <div style="display:flex;justify-content:space-between;align-items:center">
+              <div style="font-size:10px;font-weight:700;color:var(--green)">▲ +7% Dano Global</div>
+              <div id="shop-dmg-cost" style="font-size:10px;color:var(--yellow)">500 ⬡</div>
             </div>
-            <div>Torres causam 7% mais dano por nível. Acumula.</div>
-            <div id="shop-dmg-level">Nível: 0 / 5</div>
+            <div style="font-size:9px;color:var(--text-dim);margin-top:3px">Torres causam 7% mais dano por nível. Acumula.</div>
+            <div id="shop-dmg-level" style="font-size:8px;color:var(--cyan);margin-top:3px">Nível: 0 / 5</div>
           </div>
 
-          <div class="shop-item" id="shop-ram" data-action="buyShopItem('ram')">
-            <div>
-              <div>▼ -10 MB Custo de Torres</div>
-              <div id="shop-ram-cost">400 ⬡</div>
+          <div class="shop-item" id="shop-ram" style="border:1px solid var(--border);padding:10px;margin-bottom:8px;background:#0a0a10;cursor:pointer" data-action="buyShopItem('ram')">
+            <div style="display:flex;justify-content:space-between;align-items:center">
+              <div style="font-size:10px;font-weight:700;color:var(--green)">▼ -10 MB Custo de Torres</div>
+              <div id="shop-ram-cost" style="font-size:10px;color:var(--yellow)">400 ⬡</div>
             </div>
-            <div>Reduz custo de instalação de torres em 10 MB. Acumula.</div>
-            <div id="shop-ram-level">Nível: 0 / 3</div>
+            <div style="font-size:9px;color:var(--text-dim);margin-top:3px">Reduz custo de instalação de torres em 10 MB. Acumula.</div>
+            <div id="shop-ram-level" style="font-size:8px;color:var(--cyan);margin-top:3px">Nível: 0 / 3</div>
           </div>
 
           <!-- COSMÉTICOS -->
-          <div>&gt; COSMÉTICOS</div>
+          <div style="font-size:9px;letter-spacing:3px;color:var(--text-dim);margin-bottom:8px;padding-bottom:4px;border-bottom:1px solid var(--border);margin-top:14px">&gt; COSMÉTICOS</div>
 
-          <div class="shop-item" id="shop-cat" data-action="buyShopItem('cat')">
-            <div>
-              <div>🐱 Gato Hacker (Cyber-Cat)</div>
-              <div id="shop-cat-cost">250 ⬡</div>
+          <div class="shop-item" id="shop-cat" style="border:1px solid var(--border);padding:10px;margin-bottom:8px;background:#0a0a10;cursor:pointer" data-action="buyShopItem('cat')">
+            <div style="display:flex;justify-content:space-between;align-items:center">
+              <div style="font-size:10px;font-weight:700;color:var(--purple)">🐱 Gato Hacker (Cyber-Cat)</div>
+              <div id="shop-cat-cost" style="font-size:10px;color:var(--yellow)">250 ⬡</div>
             </div>
-            <div>Um gatinho cibernético passeia pelas bordas da tela durante o jogo.</div>
-            <div id="shop-cat-status">Status: Não adquirido</div>
+            <div style="font-size:9px;color:var(--text-dim);margin-top:3px">Um gatinho cibernético passeia pelas bordas da tela durante o jogo.</div>
+            <div id="shop-cat-status" style="font-size:8px;color:var(--cyan);margin-top:3px">Status: Não adquirido</div>
           </div>
 
-          <div id="shop-msg"></div>
+          <div id="shop-msg" style="font-size:10px;min-height:18px;padding:5px 8px;border-left:2px solid transparent;margin-top:8px"></div>
         </div>
       </div>
     </div>
@@ -181,7 +181,7 @@
 <div id="terminal-zero-bar">
   <div id="tz-label">TERMINAL_ZERO: THE CORE OVERLORD</div>
   <div id="tz-hp-row">
-    <div id="tz-bar-track"><div id="tz-bar-fill"></div></div>
+    <div id="tz-bar-track"><div id="tz-bar-fill" style="width:100%"></div></div>
     <div id="tz-hp-text">??? HP</div>
   </div>
   <div id="tz-abilities">
@@ -200,12 +200,12 @@
     <div id="player-tag">[ ANON ]</div>
     <div id="difficulty-tag" class="normal">PLENO</div>
   </div>
-  <div>
+  <div style="display:flex;align-items:center;gap:12px">
     <div id="wave-info">WAVE <span id="stat-wave">0</span> / <span id="stat-maxwave">21</span></div>
   </div>
   <div id="boss-bar">
     <div id="boss-bar-label"><span id="boss-name">BOSS</span><span id="boss-hp-text">???</span></div>
-    <div id="boss-bar-track"><div id="boss-bar-fill"></div></div>
+    <div id="boss-bar-track"><div id="boss-bar-fill" style="width:100%"></div></div>
   </div>
   <div id="status-bar"></div>
 </div>
@@ -241,8 +241,8 @@
     </div>
 
     <div class="tower-card" id="card-ramextract" data-action="selectTower('ramextract')">
-      <div class="tower-name"><span class="badge">RAM</span>RAM_Extractor</div>
-      <div class="tower-desc">Gera +8 MB RAM a cada ~8s durante waves. Não ataca.</div>
+      <div class="tower-name" style="color:#00e5ff"><span class="badge" style="color:#00e5ff;border-color:#007a99">RAM</span>RAM_Extractor</div>
+      <div class="tower-desc" style="color:#007a99">Gera +8 MB RAM a cada ~8s durante waves. Não ataca.</div>
       <div class="tower-cost"><span class="ram-icon">▣</span> 80 MB RAM</div>
     </div>
 
@@ -262,7 +262,7 @@
     <div class="panel-section">
       <div class="panel-title">&gt; node_info</div>
       <div id="selected-info">
-        <div>
+        <div style="color:var(--text-dim); font-size:10px">
           Selecione uma torre no painel<br>e clique no grid para instalar.<br><br>
           Clique numa torre instalada<br>para upgrade/remoção.
         </div>
@@ -275,10 +275,10 @@
       <div class="panel-title">&gt; controls</div>
       <button class="btn btn-cyan" id="btn-wave" data-action="startWave()">▶ NEXT_WAVE</button>
       <button class="btn" id="btn-auto" data-action="toggleAutoStart()">AUTO: OFF</button>
-      <button class="btn" id="btn-speed" data-action="toggleSpeed()">▷ SPEED: 1x</button>
-      <button class="btn btn-red" id="btn-sell" data-action="sellTower()">✕ REMOVE</button>
-      <button class="btn" data-action="deselectAll()">◌ DESELECT</button>
-      <button class="btn btn-menu" data-action="goToMenu()">⟵ MENU</button>
+      <button class="btn" id="btn-speed" data-action="toggleSpeed()" style="border-color:var(--green-dim);letter-spacing:1px">▷ SPEED: 1x</button>
+      <button class="btn btn-red" id="btn-sell" data-action="sellTower()" style="display:none">✕ REMOVE</button>
+      <button class="btn" data-action="deselectAll()" style="margin-top:4px">◌ DESELECT</button>
+      <button class="btn btn-menu" data-action="goToMenu()" style="margin-top:4px">⟵ MENU</button>
     </div>
 
     <hr class="divider">
@@ -286,13 +286,13 @@
     <div id="wave-bar" class="panel-section">
       <div class="panel-title">&gt; wave_progress</div>
       <div class="progress-label">Bugs eliminados:</div>
-      <div class="progress-track"><div class="progress-fill" id="prog-bugs"></div></div>
-      <div class="progress-label">Integridade:</div>
-      <div class="progress-track"><div class="progress-fill" id="prog-lives"></div></div>
-      <div>
-        <span>■</span> Caminho<br>
-        <span>◉</span> Torre ativa<br>
-        <span>□</span> Slot livre
+      <div class="progress-track"><div class="progress-fill" id="prog-bugs" style="width:0%"></div></div>
+      <div class="progress-label" style="margin-top:8px">Integridade:</div>
+      <div class="progress-track"><div class="progress-fill" id="prog-lives" style="width:100%"></div></div>
+      <div style="font-size:9px; color:var(--text-dim); margin-top:10px; line-height:1.7">
+        <span style="color:var(--green)">■</span> Caminho<br>
+        <span style="color:var(--cyan)">◉</span> Torre ativa<br>
+        <span style="color:var(--text-dim)">□</span> Slot livre
       </div>
     </div>
   </div>
@@ -308,7 +308,7 @@
     <div id="modal-feedback"></div>
     <div class="modal-actions">
       <button class="btn btn-red" id="modal-cancel" data-action="closeModal()">CANCELAR</button>
-      <button class="btn btn-cyan" id="modal-understood" data-action="closeModal()">ENTENDIDO</button>
+      <button class="btn btn-cyan" id="modal-understood" data-action="closeModal()" style="display:none">ENTENDIDO</button>
     </div>
   </div>
 </div>
@@ -334,8 +334,8 @@
   <div id="overlay-msg">SISTEMA COMPROMETIDO</div>
   <div id="overlay-score">SCORE: <span id="final-score">0</span></div>
   <div id="overlay-stats"></div>
-  <button class="btn btn-cyan" data-action="resetGame()">⟳ REINICIAR</button>
-  <button class="btn btn-menu" data-action="goToMenu(true)">⟵ MENU PRINCIPAL</button>
+  <button class="btn btn-cyan" data-action="resetGame()" style="margin-top:16px; padding:10px 30px; font-size:13px">⟳ REINICIAR</button>
+  <button class="btn btn-menu" data-action="goToMenu(true)" style="margin-top:6px; padding:8px 24px; font-size:10px">⟵ MENU PRINCIPAL</button>
 </div>
 
 
