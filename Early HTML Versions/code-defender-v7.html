@@ -1,0 +1,3182 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CODE DEFENDER: SYSTEM BREACH</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;600;700;800&family=Orbitron:wght@700;900&display=swap');
+
+  :root {
+    --bg: #050508;
+    --green: #00ff41;
+    --green-dim: #00882b;
+    --green-dark: #002b11;
+    --red: #ff2244;
+    --cyan: #00e5ff;
+    --cyan-dim: #007a99;
+    --yellow: #ffe600;
+    --orange: #ff8c00;
+    --purple: #bf5fff;
+    --pink: #ff2d78;
+    --grid-line: #121218;
+    --panel: #08080f;
+    --border: #1a2a1a;
+    --border-cyan: #0d2a33;
+    --text: #c8ffc8;
+    --text-dim: #3a6a3a;
+    --neon-glow: 0 0 20px rgba(0,255,65,0.4), 0 0 40px rgba(0,255,65,0.2);
+    --cyan-glow: 0 0 20px rgba(0,229,255,0.4);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--green);
+    font-family: 'JetBrains Mono', 'Courier New', monospace;
+    overflow: hidden;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    user-select: none;
+  }
+
+  /* ===== HOMEPAGE / START OVERLAY ===== */
+  #home-overlay {
+    position: fixed; inset: 0; z-index: 600;
+    display: flex; align-items: center; justify-content: center;
+    background: #020205;
+    overflow: hidden;
+  }
+
+  #home-overlay .bg-grid {
+    position: absolute; inset: 0;
+    background-image:
+      linear-gradient(rgba(0,255,65,0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,255,65,0.04) 1px, transparent 1px);
+    background-size: 40px 40px;
+    animation: gridPulse 4s ease-in-out infinite;
+  }
+
+  #home-overlay .bg-lines {
+    position: absolute; inset: 0; overflow: hidden; pointer-events: none;
+  }
+  #home-overlay .bg-lines span {
+    position: absolute; left: 0; right: 0;
+    font-size: 9px; color: rgba(0,255,65,0.07);
+    font-family: 'JetBrains Mono', monospace;
+    white-space: nowrap; letter-spacing: 2px;
+    animation: scrollLine 20s linear infinite;
+  }
+
+  #home-box {
+    position: relative; z-index: 2;
+    width: 980px; max-width: 96vw;
+    max-height: 94vh;
+    background: rgba(5,5,12,0.96);
+    border: 1px solid var(--green-dim);
+    border-radius: 2px;
+    padding: 0;
+    overflow: hidden;
+    box-shadow: 0 0 60px rgba(0,255,65,0.15), 0 0 120px rgba(0,255,65,0.05), inset 0 0 40px rgba(0,255,65,0.02);
+  }
+
+  .home-header {
+    background: linear-gradient(135deg, #050510 0%, #030308 100%);
+    border-bottom: 1px solid var(--green-dim);
+    padding: 32px 36px 28px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .home-header::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse at 50% 0%, rgba(0,255,65,0.08) 0%, transparent 70%);
+  }
+  .home-header .corner-tl { position:absolute; top:12px; left:12px; width:24px; height:24px; border-top:2px solid var(--green-dim); border-left:2px solid var(--green-dim); }
+  .home-header .corner-tr { position:absolute; top:12px; right:12px; width:24px; height:24px; border-top:2px solid var(--green-dim); border-right:2px solid var(--green-dim); }
+
+  .home-badge {
+    display: inline-block;
+    font-size: 9px; letter-spacing: 4px;
+    color: var(--cyan); border: 1px solid var(--cyan-dim);
+    padding: 3px 12px; margin-bottom: 14px;
+    background: rgba(0,229,255,0.05);
+    text-transform: uppercase;
+  }
+
+  .home-title {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 34px; font-weight: 900;
+    color: var(--green);
+    letter-spacing: 3px;
+    text-shadow: 0 0 20px rgba(0,255,65,0.8), 0 0 40px rgba(0,255,65,0.4), 0 0 80px rgba(0,255,65,0.2);
+    line-height: 1.1;
+    animation: titleFlicker 6s ease-in-out infinite;
+  }
+  .home-title .breach {
+    display: block; font-size: 16px;
+    color: var(--cyan); letter-spacing: 8px;
+    text-shadow: var(--cyan-glow);
+    margin-top: 6px;
+    font-weight: 700;
+  }
+
+  .home-sub {
+    font-size: 10px; color: var(--text-dim);
+    letter-spacing: 2px; margin-top: 12px;
+  }
+
+  .home-body {
+    padding: 24px 36px 28px;
+    display: grid;
+    grid-template-columns: minmax(0, 1.1fr) minmax(280px, 0.9fr);
+    gap: 20px;
+    overflow: auto;
+    max-height: calc(94vh - 164px);
+  }
+
+  .home-left, .home-right { min-width: 0; }
+
+  .scoreboard-panel {
+    border: 1px solid var(--border-cyan);
+    background: linear-gradient(180deg, rgba(0,229,255,0.05), rgba(0,255,65,0.025));
+    padding: 14px;
+    min-height: 100%;
+    box-shadow: inset 0 0 28px rgba(0,229,255,0.03);
+  }
+  .scoreboard-title {
+    font-family: 'Orbitron', sans-serif;
+    color: var(--cyan);
+    font-size: 16px;
+    letter-spacing: 3px;
+    margin-bottom: 10px;
+    text-shadow: var(--cyan-glow);
+  }
+  .scoreboard-sub {
+    color: var(--text-dim);
+    font-size: 9px;
+    line-height: 1.7;
+    margin-bottom: 12px;
+  }
+  .score-row {
+    display: grid;
+    grid-template-columns: 28px minmax(0, 1fr) 76px;
+    align-items: center;
+    gap: 8px;
+    min-height: 30px;
+    border-top: 1px solid rgba(0,229,255,0.08);
+    color: var(--text);
+    font-size: 10px;
+  }
+  .score-row:first-child { border-top-color: rgba(0,255,65,0.18); }
+  .score-rank { color: var(--green); font-weight: 800; }
+  .score-player {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .score-meta { color: var(--text-dim); font-size: 8px; margin-top: 2px; }
+  .score-points { color: var(--cyan); text-align: right; font-weight: 800; }
+  .score-empty {
+    border: 1px dashed var(--border);
+    color: var(--text-dim);
+    font-size: 10px;
+    line-height: 1.8;
+    padding: 18px 12px;
+    margin-top: 12px;
+    text-align: center;
+  }
+
+  .home-section-label {
+    font-size: 9px; letter-spacing: 3px;
+    color: var(--text-dim); text-transform: uppercase;
+    margin-bottom: 8px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .home-section-label::after {
+    content: ''; flex: 1; height: 1px; background: var(--border);
+  }
+
+  .home-field {
+    margin-bottom: 20px;
+  }
+
+  .home-input {
+    width: 100%;
+    padding: 10px 14px;
+    background: #06060e;
+    border: 1px solid #1a2a1a;
+    color: var(--text);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+  .home-input:focus { border-color: var(--green-dim); box-shadow: 0 0 12px rgba(0,255,65,0.1); }
+  .home-input::placeholder { color: var(--text-dim); }
+
+  /* DIFFICULTY CARDS */
+  .diff-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 20px; }
+  .diff-card {
+    border: 1px solid #1a2a1a; padding: 12px 10px;
+    cursor: pointer; background: #06060e;
+    transition: all 0.2s; text-align: center;
+    position: relative; overflow: hidden;
+  }
+  .diff-card::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+    background: transparent; transition: background 0.2s;
+  }
+  .diff-card.diff-easy::before { background: linear-gradient(90deg, transparent, var(--green), transparent); }
+  .diff-card.diff-normal::before { background: linear-gradient(90deg, transparent, var(--yellow), transparent); }
+  .diff-card.diff-hard::before { background: linear-gradient(90deg, transparent, var(--red), transparent); }
+  .diff-card.selected.diff-easy { border-color: var(--green); background: rgba(0,255,65,0.06); box-shadow: 0 0 16px rgba(0,255,65,0.15); }
+  .diff-card.selected.diff-normal { border-color: var(--yellow); background: rgba(255,230,0,0.05); box-shadow: 0 0 16px rgba(255,230,0,0.12); }
+  .diff-card.selected.diff-hard { border-color: var(--red); background: rgba(255,34,68,0.06); box-shadow: 0 0 16px rgba(255,34,68,0.15); }
+  .diff-name { font-size: 11px; font-weight: 700; letter-spacing: 2px; margin-bottom: 4px; }
+  .diff-easy .diff-name { color: var(--green); }
+  .diff-normal .diff-name { color: var(--yellow); }
+  .diff-hard .diff-name { color: var(--red); }
+  .diff-label { font-size: 9px; color: var(--text-dim); letter-spacing: 1px; margin-bottom: 6px; }
+  .diff-stat { font-size: 8px; color: var(--text-dim); line-height: 1.8; }
+  .diff-ram { font-size: 13px; font-weight: 700; color: var(--cyan); }
+
+  /* MAP CARDS */
+  .map-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 20px; }
+  .map-card {
+    border: 1px solid #1a2a1a; padding: 10px 12px;
+    cursor: pointer; background: #06060e; color: var(--text-dim);
+    transition: all 0.2s; font-size: 10px;
+  }
+  .map-card.selected { border-color: var(--cyan); box-shadow: 0 0 12px rgba(0,229,255,0.1); color: var(--cyan); }
+  .map-card-name { font-weight: 700; margin-bottom: 3px; font-size: 11px; letter-spacing: 1px; }
+  .map-card-desc { font-size: 8px; color: var(--text-dim); line-height: 1.5; }
+
+  .home-actions { display: flex; gap: 10px; justify-content: flex-end; }
+
+  /* DECORATIVE TERMINAL BLOCK */
+  .term-block {
+    background: #04040a; border: 1px solid #0f1a0f;
+    padding: 10px 14px; margin-bottom: 20px;
+    font-size: 9px; color: var(--text-dim);
+    line-height: 2; letter-spacing: 1px;
+  }
+  .term-block .t-green { color: var(--green-dim); }
+  .term-block .t-cyan { color: var(--cyan-dim); }
+  .term-block .t-red { color: #661122; }
+
+  /* ===== HEADER ===== */
+  #header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 6px 16px;
+    border-bottom: 1px solid var(--border);
+    background: #050508;
+    flex-shrink: 0;
+    position: relative;
+  }
+  #header::after {
+    content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 1px;
+    background: linear-gradient(90deg, transparent, var(--green), var(--cyan), var(--green), transparent);
+    opacity: 0.3;
+  }
+  #title {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 14px; font-weight: 700;
+    letter-spacing: 3px; color: var(--green);
+    text-shadow: 0 0 12px var(--green);
+  }
+  #title span { color: var(--cyan); }
+  .stat-group { display: flex; gap: 20px; align-items: center; }
+  .stat { font-size: 11px; display: flex; align-items: center; gap: 6px; color: var(--text-dim); }
+  .stat-val {
+    font-size: 13px; font-weight: 700; color: var(--green);
+    text-shadow: 0 0 8px var(--green-dim); min-width: 30px; display: inline-block;
+  }
+  .stat-val.warn { color: var(--yellow); text-shadow: 0 0 8px rgba(255,230,0,0.5); }
+  .stat-val.danger { color: var(--red); animation: blink 0.5s infinite; }
+  #wave-info { font-size: 11px; color: var(--cyan); letter-spacing: 2px; }
+  #player-tag { font-size: 10px; color: var(--text-dim); letter-spacing: 1px; }
+  #difficulty-tag { font-size: 9px; padding: 2px 8px; border: 1px solid; letter-spacing: 1px; }
+  #difficulty-tag.easy { color: var(--green); border-color: var(--green-dim); }
+  #difficulty-tag.normal { color: var(--yellow); border-color: #665a00; }
+  #difficulty-tag.hard { color: var(--red); border-color: #661122; }
+
+  /* BOSS HP BAR */
+  #boss-bar {
+    display: none; position: absolute; left: 50%; transform: translateX(-50%);
+    bottom: -32px; width: 340px; z-index: 50;
+    background: #050508; border: 1px solid var(--red);
+    padding: 4px 10px;
+    box-shadow: 0 0 20px rgba(255,34,68,0.3);
+  }
+  #boss-bar.visible { display: block; }
+  #boss-bar-label { font-size: 9px; color: var(--red); letter-spacing: 2px; margin-bottom: 3px; display: flex; justify-content: space-between; }
+  #boss-bar-track { height: 6px; background: #1a0008; border: 1px solid #330010; }
+  #boss-bar-fill { height: 100%; background: var(--red); box-shadow: 0 0 8px var(--red); transition: width 0.2s; }
+
+  /* STATUS EFFECTS BAR */
+  #status-bar {
+    display: flex; gap: 8px; align-items: center;
+    position: absolute; right: 16px; bottom: -30px; z-index: 50;
+  }
+  .status-effect {
+    font-size: 9px; padding: 2px 8px; border: 1px solid;
+    animation: blink 0.8s infinite;
+  }
+  .status-effect.ram-leak { color: var(--red); border-color: var(--red); background: rgba(255,34,68,0.1); }
+  .status-effect.cpu-throttle { color: var(--orange); border-color: var(--orange); background: rgba(255,140,0,0.1); }
+
+  /* MAIN LAYOUT */
+  #main { display: flex; flex: 1; overflow: hidden; }
+
+  /* SIDEBAR */
+  #sidebar {
+    width: 200px; border-right: 1px solid var(--border);
+    background: var(--panel); display: flex; flex-direction: column;
+    padding: 10px 8px; gap: 8px; flex-shrink: 0; overflow-y: auto;
+  }
+  .sidebar-title {
+    font-size: 9px; letter-spacing: 3px; color: var(--text-dim);
+    text-transform: uppercase; padding: 0 4px 6px;
+    border-bottom: 1px solid var(--border);
+  }
+  .tower-card {
+    border: 1px solid var(--border); border-radius: 2px;
+    padding: 8px; cursor: pointer; transition: all 0.15s;
+    position: relative; background: #0a0a10;
+  }
+  .tower-card:hover { border-color: var(--green-dim); background: #0e0e18; }
+  .tower-card.selected { border-color: var(--green); background: var(--green-dark); box-shadow: 0 0 10px rgba(0,255,65,0.2); }
+  .tower-card.disabled { opacity: 0.4; cursor: not-allowed; }
+  .tower-name { font-size: 11px; font-weight: 700; color: var(--green); margin-bottom: 3px; }
+  .tower-name .badge { font-size: 9px; background: var(--green-dark); border: 1px solid var(--green-dim); border-radius: 2px; padding: 1px 4px; margin-right: 4px; color: var(--green); }
+  .tower-desc { font-size: 9px; color: var(--text-dim); line-height: 1.5; margin-bottom: 4px; }
+  .tower-cost { font-size: 10px; color: var(--cyan); display: flex; align-items: center; gap: 4px; }
+  .tower-cost .ram-icon { color: var(--yellow); }
+  .divider { border: none; border-top: 1px solid var(--border); margin: 2px 0; }
+  #log-box {
+    flex: 1; border: 1px solid var(--border); border-radius: 2px;
+    padding: 6px; overflow-y: auto; font-size: 9px; color: var(--text-dim);
+    line-height: 1.8; background: #060609; min-height: 80px;
+  }
+  #log-box div { border-bottom: 1px solid #0a0a0f; padding: 1px 0; }
+  #log-box .log-ok { color: var(--green-dim); }
+  #log-box .log-warn { color: var(--yellow); }
+  #log-box .log-err { color: var(--red); }
+  #log-box .log-info { color: var(--cyan); }
+  #log-box .log-boss { color: var(--red); font-weight: 700; }
+
+  /* CANVAS */
+  #canvas-wrap {
+    flex: 1; display: flex; align-items: center; justify-content: center;
+    background: var(--bg); position: relative; overflow: hidden;
+  }
+  canvas { display: block; cursor: crosshair; }
+
+  /* RIGHT PANEL */
+  #right-panel {
+    width: 190px; border-left: 1px solid var(--border);
+    background: var(--panel); display: flex; flex-direction: column;
+    padding: 10px 8px; gap: 8px; flex-shrink: 0;
+  }
+  .panel-section { display: flex; flex-direction: column; gap: 6px; }
+  .panel-title {
+    font-size: 9px; letter-spacing: 3px; color: var(--text-dim);
+    text-transform: uppercase; padding-bottom: 6px;
+    border-bottom: 1px solid var(--border);
+  }
+  #selected-info { font-size: 10px; color: var(--text-dim); line-height: 1.8; min-height: 60px; }
+  #selected-info .info-name { color: var(--green); font-weight: 700; font-size: 11px; }
+  #selected-info .info-stat { color: var(--cyan); }
+
+  .btn {
+    background: transparent; border: 1px solid var(--green-dim);
+    color: var(--green); font-family: 'JetBrains Mono', monospace;
+    font-size: 10px; padding: 6px 10px; cursor: pointer;
+    letter-spacing: 1px; transition: all 0.15s; text-align: center;
+  }
+  .btn:hover { background: var(--green-dark); border-color: var(--green); box-shadow: 0 0 8px rgba(0,255,65,0.2); }
+  .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+  .btn.btn-red { border-color: #661122; color: var(--red); }
+  .btn.btn-red:hover { background: #1a0008; border-color: var(--red); }
+  .btn.btn-cyan { border-color: #006677; color: var(--cyan); }
+  .btn.btn-cyan:hover { background: #001a1f; border-color: var(--cyan); }
+  .btn.btn-menu { border-color: #332200; color: var(--orange); font-size: 9px; }
+  .btn.btn-menu:hover { background: #1a1000; border-color: var(--orange); }
+
+  #wave-bar { margin-top: auto; }
+  .progress-label { font-size: 9px; color: var(--text-dim); margin-bottom: 4px; }
+  .progress-track { height: 4px; background: #1a1a1a; border: 1px solid var(--border); position: relative; overflow: hidden; }
+  .progress-fill { height: 100%; background: var(--green); box-shadow: 0 0 6px var(--green); transition: width 0.3s; }
+  .progress-fill.red { background: var(--red); box-shadow: 0 0 6px var(--red); }
+
+  /* UPGRADE MODAL */
+  #upgrade-modal {
+    display: none; position: fixed; inset: 0;
+    background: rgba(0,0,0,0.88); z-index: 100;
+    align-items: center; justify-content: center;
+  }
+  #upgrade-modal.visible { display: flex; }
+  #modal-box {
+    background: #06060e; border: 1px solid var(--green);
+    box-shadow: 0 0 60px rgba(0,255,65,0.2), inset 0 0 30px rgba(0,255,65,0.02);
+    padding: 24px 28px; width: 500px; max-width: 95vw; position: relative;
+  }
+  #modal-box::before {
+    content: 'UPGRADE_PROTOCOL.exe';
+    position: absolute; top: -1px; left: 20px;
+    background: #06060e; padding: 0 8px; font-size: 9px;
+    color: var(--green-dim); letter-spacing: 2px; transform: translateY(-50%);
+  }
+  #modal-title { font-size: 13px; font-weight: 700; color: var(--green); margin-bottom: 4px; letter-spacing: 2px; }
+  #modal-sub { font-size: 10px; color: var(--text-dim); margin-bottom: 18px; }
+  #modal-challenge {
+    background: #0a0f0a; border: 1px solid var(--green-dark);
+    border-radius: 2px; padding: 14px; margin-bottom: 16px;
+    font-size: 12px; color: var(--text); line-height: 2;
+  }
+  .diff-badge {
+    display: inline-block; font-size: 8px; letter-spacing: 2px;
+    padding: 2px 6px; border: 1px solid; margin-bottom: 8px;
+  }
+  .diff-badge.basic { color: var(--green); border-color: var(--green-dim); }
+  .diff-badge.inter { color: var(--yellow); border-color: #665a00; }
+  .diff-badge.adv { color: var(--red); border-color: #661122; }
+  .option-row { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
+  .option-btn {
+    background: #0c120c; border: 1px solid var(--green-dim); color: var(--green);
+    font-family: 'JetBrains Mono', monospace; font-size: 12px; font-weight: 700;
+    padding: 8px 16px; cursor: pointer; transition: all 0.15s; letter-spacing: 1px;
+  }
+  .option-btn:hover { background: var(--green-dark); border-color: var(--green); box-shadow: 0 0 10px rgba(0,255,65,0.3); }
+  .option-btn.correct { background: #003311; border-color: var(--green); color: var(--green); box-shadow: 0 0 15px rgba(0,255,65,0.5); }
+  .option-btn.wrong { background: #1a0008; border-color: var(--red); color: var(--red); }
+  #modal-feedback {
+    font-size: 11px; min-height: 18px; margin-bottom: 12px;
+    padding: 6px 10px; border-left: 2px solid transparent;
+  }
+  #modal-feedback.ok { border-color: var(--green); color: var(--green); background: #001a00; }
+  #modal-feedback.fail { border-color: var(--red); color: var(--red); background: #1a0005; }
+  #modal-feedback strong { color: var(--cyan); }
+  .challenge-code {
+    margin-top: 8px;
+    padding: 9px 10px;
+    background: #030608;
+    border: 1px solid var(--border-cyan);
+    color: var(--cyan);
+    font-size: 10px;
+    line-height: 1.6;
+    white-space: pre-wrap;
+    user-select: text;
+  }
+  .modal-actions { display: flex; gap: 8px; justify-content: flex-end; }
+
+  /* MALWARE POPUP */
+  .malware-popup {
+    position: absolute; z-index: 80;
+    background: #0f0f1a; border: 1px solid var(--cyan-dim);
+    box-shadow: 0 0 20px rgba(0,229,255,0.15);
+    min-width: 200px; max-width: 260px;
+    animation: popupAppear 0.3s ease-out;
+    cursor: pointer;
+  }
+  .malware-popup.error-style { border-color: #661122; box-shadow: 0 0 20px rgba(255,34,68,0.2); }
+  .malware-popup.ad-style { border-color: #4a2288; box-shadow: 0 0 20px rgba(150,80,255,0.2); }
+
+  .popup-titlebar {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 5px 8px; background: #0d0d1f; border-bottom: 1px solid var(--border);
+    font-size: 9px; letter-spacing: 1px; color: var(--text-dim);
+    cursor: default;
+  }
+  .error-style .popup-titlebar { background: #1a0008; color: var(--red); }
+  .ad-style .popup-titlebar { background: #12082a; color: var(--purple); }
+
+  .popup-close {
+    width: 16px; height: 16px; background: var(--red);
+    color: #fff; font-size: 10px; font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; border: none; flex-shrink: 0;
+    font-family: 'JetBrains Mono', monospace;
+    transition: box-shadow 0.15s;
+  }
+  .popup-close:hover { box-shadow: 0 0 10px var(--red); }
+
+  .popup-body {
+    padding: 12px; font-size: 10px; color: var(--text-dim); line-height: 1.7;
+  }
+  .popup-body .popup-icon { font-size: 24px; display: block; text-align: center; margin-bottom: 6px; }
+  .popup-body .popup-title-text { color: var(--cyan); font-weight: 700; font-size: 11px; margin-bottom: 4px; }
+  .error-style .popup-body .popup-title-text { color: var(--red); }
+  .ad-style .popup-body .popup-title-text { color: var(--purple); }
+  .popup-fake-btn {
+    display: block; width: 100%; margin-top: 10px; padding: 6px;
+    background: #1a1a3a; border: 1px solid #3a3a66;
+    color: #8888cc; font-size: 10px; text-align: center;
+    cursor: pointer; font-family: 'JetBrains Mono', monospace;
+  }
+
+  /* GAME OVER / WIN */
+  #overlay {
+    display: none; position: fixed; inset: 0;
+    background: rgba(0,0,0,0.92); z-index: 200;
+    align-items: center; justify-content: center;
+    flex-direction: column; gap: 16px;
+  }
+  #overlay.visible { display: flex; }
+  #overlay-title {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 36px; font-weight: 900; letter-spacing: 6px;
+    text-shadow: 0 0 30px currentColor;
+  }
+  #overlay-title.lose { color: var(--red); }
+  #overlay-title.win { color: var(--green); }
+  #overlay-msg { font-size: 13px; color: var(--text-dim); letter-spacing: 2px; }
+  #overlay-score { font-size: 20px; color: var(--cyan); letter-spacing: 4px; }
+  #overlay-stats { font-size: 10px; color: var(--text-dim); line-height: 2; text-align: center; margin-top: 8px; }
+
+  /* CONFIRM MODAL */
+  #confirm-modal {
+    display: none; position: fixed; inset: 0;
+    z-index: 220;
+    background: rgba(0,0,0,0.78);
+    align-items: center; justify-content: center;
+  }
+  #confirm-modal.visible { display: flex; }
+  #confirm-box {
+    width: 430px; max-width: 92vw;
+    background: #07070f;
+    border: 1px solid var(--red);
+    padding: 22px 24px;
+    box-shadow: 0 0 46px rgba(255,34,68,0.18), inset 0 0 28px rgba(0,229,255,0.03);
+  }
+  #confirm-title {
+    font-family: 'Orbitron', sans-serif;
+    color: var(--red);
+    letter-spacing: 3px;
+    font-size: 16px;
+    margin-bottom: 10px;
+    text-shadow: 0 0 18px rgba(255,34,68,0.55);
+  }
+  #confirm-msg {
+    color: var(--text-dim);
+    font-size: 11px;
+    line-height: 1.8;
+    margin-bottom: 18px;
+  }
+
+  @media (max-width: 820px) {
+    #home-box { width: 96vw; }
+    .home-header { padding: 24px 22px 20px; }
+    .home-title { font-size: 26px; }
+    .home-title .breach { font-size: 12px; letter-spacing: 5px; }
+    .home-body { grid-template-columns: 1fr; padding: 18px; }
+  }
+
+  /* GAME MODE TOGGLE */
+  .mode-toggle-wrap {
+    margin-bottom: 20px;
+    border: 1px solid var(--border-cyan);
+    background: rgba(0,229,255,0.03);
+    padding: 14px;
+  }
+  .mode-toggle-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 10px;
+  }
+  .mode-toggle-label {
+    font-size: 9px; letter-spacing: 3px; color: var(--text-dim); text-transform: uppercase;
+  }
+  .mode-switch {
+    position: relative; display: flex; align-items: center; gap: 10px; cursor: pointer;
+  }
+  .mode-switch-track {
+    width: 52px; height: 24px; border: 1px solid var(--green-dim);
+    background: var(--green-dark); border-radius: 2px;
+    position: relative; transition: all 0.25s; cursor: pointer;
+    display: flex; align-items: center;
+  }
+  .mode-switch-track.arcade {
+    border-color: var(--orange); background: rgba(255,140,0,0.15);
+    box-shadow: 0 0 12px rgba(255,140,0,0.3);
+  }
+  .mode-switch-thumb {
+    width: 22px; height: 20px; background: var(--green);
+    position: absolute; left: 1px; transition: all 0.25s;
+    box-shadow: 0 0 8px var(--green);
+  }
+  .mode-switch-track.arcade .mode-switch-thumb {
+    left: 29px; background: var(--orange); box-shadow: 0 0 8px var(--orange);
+  }
+  .mode-switch-labels {
+    display: flex; justify-content: space-between; font-size: 8px; letter-spacing: 1px; color: var(--text-dim);
+  }
+  .mode-switch-labels .edu { color: var(--green-dim); font-weight: 700; }
+  .mode-switch-labels .arc { color: #664400; }
+  .mode-switch-track.arcade ~ .mode-switch-labels .edu { color: #005500; }
+  .mode-switch-track.arcade ~ .mode-switch-labels .arc { color: var(--orange); font-weight: 700; }
+  .mode-warning {
+    font-size: 9px; color: var(--orange); letter-spacing: 1px;
+    display: none; margin-top: 8px; border: 1px solid rgba(255,140,0,0.3);
+    padding: 5px 8px; background: rgba(255,140,0,0.05);
+    animation: warningPulse 2s ease-in-out infinite;
+  }
+  .mode-warning.visible { display: block; }
+  @keyframes warningPulse { 0%,100%{opacity:1} 50%{opacity:0.6} }
+  .mode-edu-text {
+    font-size: 9px; color: var(--green-dim); letter-spacing: 1px;
+    margin-top: 8px; border: 1px solid rgba(0,255,65,0.15);
+    padding: 5px 8px; background: rgba(0,255,65,0.03);
+  }
+
+  /* TERMINAL ZERO BOSS BAR */
+  #terminal-zero-bar {
+    display: none; position: fixed; top: 0; left: 50%; transform: translateX(-50%);
+    width: 600px; max-width: 92vw;
+    z-index: 100; padding: 8px 16px 10px;
+    background: rgba(5,0,12,0.97);
+    border: 1px solid #9900ff;
+    border-top: none;
+    box-shadow: 0 0 40px rgba(153,0,255,0.4), 0 0 80px rgba(255,0,100,0.15);
+  }
+  #terminal-zero-bar.visible { display: block; }
+  #tz-label {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 10px; letter-spacing: 3px;
+    text-align: center; margin-bottom: 5px;
+    background: linear-gradient(90deg, #ff0055, #9900ff, #ff0055);
+    background-size: 200% 100%;
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    animation: tzLabelAnim 2s linear infinite;
+  }
+  @keyframes tzLabelAnim { 0%{background-position:0%} 100%{background-position:200%} }
+  #tz-hp-row { display: flex; align-items: center; gap: 10px; }
+  #tz-bar-track {
+    flex: 1; height: 12px;
+    background: #0a0010; border: 1px solid #660033;
+    position: relative; overflow: hidden;
+  }
+  #tz-bar-fill {
+    height: 100%; background: linear-gradient(90deg, #9900ff, #ff0055, #ff8800);
+    transition: width 0.3s;
+    box-shadow: 0 0 12px #ff0055;
+    position: relative;
+  }
+  #tz-bar-fill::after {
+    content: ''; position: absolute; inset: 0;
+    background: repeating-linear-gradient(90deg, transparent 0px, rgba(255,255,255,0.1) 4px, transparent 8px);
+    animation: tzBarShimmer 1s linear infinite;
+  }
+  @keyframes tzBarShimmer { from{background-position:0 0} to{background-position:16px 0} }
+  #tz-hp-text { font-size: 9px; color: #ff0055; min-width: 90px; text-align: right; letter-spacing: 1px; }
+  #tz-abilities {
+    display: flex; gap: 10px; margin-top: 6px; justify-content: center;
+  }
+  .tz-ability-badge {
+    font-size: 8px; padding: 2px 8px; border: 1px solid;
+    letter-spacing: 1px;
+  }
+  .tz-ability-badge.kp { color: #ff8800; border-color: rgba(255,136,0,0.4); background: rgba(255,136,0,0.08); }
+  .tz-ability-badge.dc { color: #9900ff; border-color: rgba(153,0,255,0.4); background: rgba(153,0,255,0.08); }
+  .tz-ability-badge.active { animation: blink 0.4s infinite; }
+
+  /* SCANLINES */
+  #scanlines {
+    pointer-events: none; position: fixed; inset: 0; z-index: 999;
+    background: repeating-linear-gradient(transparent 0px, transparent 3px, rgba(0,0,0,0.06) 3px, rgba(0,0,0,0.06) 4px);
+  }
+
+  /* ANIMATIONS */
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.2} }
+  @keyframes titleFlicker {
+    0%,100%{opacity:1} 92%{opacity:1} 93%{opacity:0.7} 94%{opacity:1} 97%{opacity:0.9} 98%{opacity:1}
+  }
+  @keyframes gridPulse {
+    0%,100%{opacity:1} 50%{opacity:0.6}
+  }
+  @keyframes scrollLine {
+    from { transform: translateY(0); } to { transform: translateY(-100%); }
+  }
+  @keyframes popupAppear {
+    from { opacity:0; transform: scale(0.9) translateY(-10px); }
+    to { opacity:1; transform: scale(1) translateY(0); }
+  }
+  @keyframes screenShake {
+    0%,100%{transform:translateX(0)} 20%{transform:translateX(-4px)} 40%{transform:translateX(4px)} 60%{transform:translateX(-3px)} 80%{transform:translateX(3px)}
+  }
+  @keyframes ramLeak {
+    0%,100%{box-shadow:inset 0 0 30px rgba(255,34,68,0.0)} 50%{box-shadow:inset 0 0 30px rgba(255,34,68,0.12)}
+  }
+
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-track { background: #060609; }
+  ::-webkit-scrollbar-thumb { background: var(--green-dark); }
+
+  /* SHOP */
+  .shop-item:hover { border-color: var(--cyan-dim) !important; background: #0d0d1a !important; }
+  .shop-item.purchased { border-color: var(--green-dim) !important; }
+  .shop-item.maxed { opacity:0.55; cursor:not-allowed !important; }
+
+  /* CYBER-CAT */
+  #cyber-cat {
+    position: fixed; z-index: 997; pointer-events: none;
+    font-size: 18px; line-height: 1;
+    filter: drop-shadow(0 0 6px #bf5fff);
+    transition: none;
+    user-select: none;
+  }
+  @keyframes catWalk { 0%,100%{transform:scaleY(1)} 50%{transform:scaleY(0.92)} }
+</style>
+</head>
+<body>
+<div id="scanlines"></div>
+
+<!-- HOME OVERLAY (nova homepage) -->
+<div id="home-overlay">
+  <div class="bg-grid"></div>
+  <div class="bg-lines" id="bg-lines"></div>
+  <div id="home-box">
+    <div class="home-header">
+      <div class="corner-tl"></div>
+      <div class="corner-tr"></div>
+      <div class="home-badge">SYSTEM SECURITY v3.0</div>
+      <div class="home-title">
+        CODE DEFENDER
+        <span class="breach">SYSTEM BREACH</span>
+      </div>
+      <div class="home-sub">&gt; INITIALIZE DEFENSE PROTOCOL — AUTHENTICATE TO CONTINUE _</div>
+    </div>
+    <div class="home-body">
+      <div class="home-left">
+
+      <div class="term-block">
+        <span class="t-cyan">[SYS]</span> Ameaças detectadas na rede corporativa.<br>
+        <span class="t-red">[WARN]</span> Múltiplos vetores de ataque identificados.<br>
+        <span class="t-green">[OK]</span> Defesa ativada. Aguardando autenticação do operador.
+      </div>
+
+      <div class="home-field">
+        <div class="home-section-label">&gt; MODO DE JOGO</div>
+        <div class="mode-toggle-wrap">
+          <div class="mode-toggle-header">
+            <div style="font-size:10px;color:var(--text)">Selecione o protocolo de operação</div>
+            <div class="mode-switch" onclick="toggleGameMode()">
+              <div id="mode-switch-track" class="mode-switch-track">
+                <div class="mode-switch-thumb"></div>
+              </div>
+            </div>
+          </div>
+          <div class="mode-switch-labels">
+            <span class="edu">■ EDUCATIVO — Responda perguntas p/ upgrade | Score 100%</span>
+          </div>
+          <div class="mode-switch-labels" style="margin-top:3px">
+            <span class="arc" id="arc-label-text">□ ARCADE — Upgrades instantâneos | Score 60%</span>
+          </div>
+          <div class="mode-edu-text" id="mode-edu-indicator">▶ MODO EDUCATIVO (padrão) — Upgrades exigem resposta correta. Pontuação integral.</div>
+          <div class="mode-warning" id="mode-warning">⚠ MODO ARCADE detectado: Multiplicador de Score 0.6x</div>
+        </div>
+      </div>
+
+      <div class="home-field">
+        <div class="home-section-label">&gt; OPERADOR</div>
+        <input id="player-name" class="home-input" placeholder="Digite seu callsign..." maxlength="20" />
+      </div>
+
+      <div class="home-field">
+        <div class="home-section-label">&gt; NÍVEL DE CLEARANCE</div>
+        <div class="diff-grid">
+          <div class="diff-card diff-easy" id="diff-easy" onclick="selectDiff('easy')">
+            <div class="diff-name">JUNIOR</div>
+            <div class="diff-label">Fácil</div>
+            <div class="diff-ram">300 MB</div>
+            <div class="diff-stat">Score x1<br>Inimigos frágeis</div>
+          </div>
+          <div class="diff-card diff-normal selected" id="diff-normal" onclick="selectDiff('normal')">
+            <div class="diff-name">PLENO</div>
+            <div class="diff-label">Normal</div>
+            <div class="diff-ram">200 MB</div>
+            <div class="diff-stat">Score x1.5<br>Balanceado</div>
+          </div>
+          <div class="diff-card diff-hard" id="diff-hard" onclick="selectDiff('hard')">
+            <div class="diff-name">SENIOR</div>
+            <div class="diff-label">Difícil</div>
+            <div class="diff-ram">100 MB</div>
+            <div class="diff-stat">Score x3<br>+5% speed a cada 2 waves</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="home-field">
+        <div class="home-section-label">&gt; TOPOLOGIA DE REDE</div>
+        <div class="map-grid">
+          <div class="map-card selected" data-map="standard" id="map-standard" onclick="selectMap('standard')">
+            <div class="map-card-name">▸ MAP 01 — STANDARD</div>
+            <div class="map-card-desc">Caminho padrão. Ideal para iniciantes.</div>
+          </div>
+          <div class="map-card" data-map="datacenter" id="map-datacenter" onclick="selectMap('datacenter')">
+            <div class="map-card-name">▸ MAP 02 — DATA CENTER</div>
+            <div class="map-card-desc">Curvas fechadas. Exige posicionamento avançado.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="home-actions">
+        <button class="btn btn-red" style="padding:8px 20px" onclick="cancelSession()">ABORT</button>
+        <button class="btn btn-cyan" style="padding:8px 24px;font-size:11px" onclick="startSession()">▶ INICIAR MISSÃO</button>
+      </div>
+      </div>
+
+      <div class="home-right">
+        <!-- TABS -->
+        <div style="display:flex;gap:0;margin-bottom:0;border-bottom:1px solid var(--border-cyan)">
+          <button id="tab-scores" onclick="switchHomeTab('scores')" style="flex:1;padding:7px 4px;font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:2px;border:none;border-bottom:2px solid var(--cyan);background:rgba(0,229,255,0.08);color:var(--cyan);cursor:pointer">TOP 10</button>
+          <button id="tab-shop" onclick="switchHomeTab('shop')" style="flex:1;padding:7px 4px;font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:2px;border:none;border-bottom:2px solid transparent;background:transparent;color:var(--text-dim);cursor:pointer">LOJA ⬡</button>
+        </div>
+
+        <!-- SCOREBOARD PANEL -->
+        <div id="panel-scores" class="scoreboard-panel" style="border-top:none">
+          <div class="scoreboard-sub" style="margin-top:10px">
+            Senior x3 | Perfect x1.5 | Arcade x0.6 | Wave 21: TERMINAL_ZERO
+          </div>
+          <div id="scoreboard-list"></div>
+        </div>
+
+        <!-- SHOP PANEL -->
+        <div id="panel-shop" style="display:none;padding:14px;border:1px solid var(--border-cyan);border-top:none;background:linear-gradient(180deg,rgba(0,229,255,0.04),rgba(0,255,65,0.02));min-height:100%">
+          <div style="font-family:'Orbitron',sans-serif;color:var(--cyan);font-size:13px;letter-spacing:3px;margin-bottom:4px;text-shadow:var(--cyan-glow)">CENTRAL DE UPGRADES</div>
+          <div style="font-size:8px;color:var(--text-dim);letter-spacing:2px;margin-bottom:12px">&amp; COSMÉTICOS</div>
+          <div id="shop-points-display" style="font-size:11px;color:var(--yellow);margin-bottom:14px;padding:6px 10px;border:1px solid rgba(255,230,0,0.3);background:rgba(255,230,0,0.05)">
+            ⬡ PONTOS DISPONÍVEIS: <span id="shop-pts">0</span>
+          </div>
+
+          <!-- UPGRADES -->
+          <div style="font-size:9px;letter-spacing:3px;color:var(--text-dim);margin-bottom:8px;padding-bottom:4px;border-bottom:1px solid var(--border)">&gt; UPGRADES PERMANENTES</div>
+
+          <div class="shop-item" id="shop-dmg" style="border:1px solid var(--border);padding:10px;margin-bottom:8px;background:#0a0a10;cursor:pointer" onclick="buyShopItem('dmg')">
+            <div style="display:flex;justify-content:space-between;align-items:center">
+              <div style="font-size:10px;font-weight:700;color:var(--green)">▲ +10% Dano Global</div>
+              <div id="shop-dmg-cost" style="font-size:10px;color:var(--yellow)">500 ⬡</div>
+            </div>
+            <div style="font-size:9px;color:var(--text-dim);margin-top:3px">Torres básicas causam 10% mais dano. Acumula.</div>
+            <div id="shop-dmg-level" style="font-size:8px;color:var(--cyan);margin-top:3px">Nível: 0 / 5</div>
+          </div>
+
+          <div class="shop-item" id="shop-ram" style="border:1px solid var(--border);padding:10px;margin-bottom:8px;background:#0a0a10;cursor:pointer" onclick="buyShopItem('ram')">
+            <div style="display:flex;justify-content:space-between;align-items:center">
+              <div style="font-size:10px;font-weight:700;color:var(--green)">▼ -10 MB Custo de Torres</div>
+              <div id="shop-ram-cost" style="font-size:10px;color:var(--yellow)">400 ⬡</div>
+            </div>
+            <div style="font-size:9px;color:var(--text-dim);margin-top:3px">Reduz custo de instalação de torres em 10 MB. Acumula.</div>
+            <div id="shop-ram-level" style="font-size:8px;color:var(--cyan);margin-top:3px">Nível: 0 / 3</div>
+          </div>
+
+          <!-- COSMÉTICOS -->
+          <div style="font-size:9px;letter-spacing:3px;color:var(--text-dim);margin-bottom:8px;padding-bottom:4px;border-bottom:1px solid var(--border);margin-top:14px">&gt; COSMÉTICOS</div>
+
+          <div class="shop-item" id="shop-cat" style="border:1px solid var(--border);padding:10px;margin-bottom:8px;background:#0a0a10;cursor:pointer" onclick="buyShopItem('cat')">
+            <div style="display:flex;justify-content:space-between;align-items:center">
+              <div style="font-size:10px;font-weight:700;color:var(--purple)">🐱 Gato Hacker (Cyber-Cat)</div>
+              <div id="shop-cat-cost" style="font-size:10px;color:var(--yellow)">800 ⬡</div>
+            </div>
+            <div style="font-size:9px;color:var(--text-dim);margin-top:3px">Um gatinho cibernético passeia pelas bordas da tela durante o jogo.</div>
+            <div id="shop-cat-status" style="font-size:8px;color:var(--cyan);margin-top:3px">Status: Não adquirido</div>
+          </div>
+
+          <div id="shop-msg" style="font-size:10px;min-height:18px;padding:5px 8px;border-left:2px solid transparent;margin-top:8px"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- TERMINAL ZERO FINAL BOSS BAR -->
+<div id="terminal-zero-bar">
+  <div id="tz-label">TERMINAL_ZERO: THE CORE OVERLORD</div>
+  <div id="tz-hp-row">
+    <div id="tz-bar-track"><div id="tz-bar-fill" style="width:100%"></div></div>
+    <div id="tz-hp-text">??? HP</div>
+  </div>
+  <div id="tz-abilities">
+    <div class="tz-ability-badge kp" id="tz-kp-badge">⚡ KERNEL_PANIC</div>
+    <div class="tz-ability-badge dc" id="tz-dc-badge">☣ DATA_CORRUPTION</div>
+  </div>
+</div>
+
+<!-- HEADER -->
+<div id="header">
+  <div id="title"><span>▸</span> CODE_DEFENDER <span>SB</span></div>
+  <div class="stat-group">
+    <div class="stat">RAM <span class="stat-val" id="stat-ram">200</span> MB</div>
+    <div class="stat">LIVES <span class="stat-val" id="stat-lives">10</span></div>
+    <div class="stat">SCORE <span class="stat-val" id="stat-score">0</span></div>
+    <div id="player-tag">[ ANON ]</div>
+    <div id="difficulty-tag" class="normal">PLENO</div>
+  </div>
+  <div style="display:flex;align-items:center;gap:12px">
+    <div id="wave-info">WAVE <span id="stat-wave">0</span> / <span id="stat-maxwave">21</span></div>
+  </div>
+  <div id="boss-bar">
+    <div id="boss-bar-label"><span id="boss-name">BOSS</span><span id="boss-hp-text">???</span></div>
+    <div id="boss-bar-track"><div id="boss-bar-fill" style="width:100%"></div></div>
+  </div>
+  <div id="status-bar"></div>
+</div>
+
+<!-- MAIN -->
+<div id="main">
+  <!-- SIDEBAR -->
+  <div id="sidebar">
+    <div class="sidebar-title">&gt; install_tower</div>
+
+    <div class="tower-card" id="card-firewall" onclick="selectTower('firewall')">
+      <div class="tower-name"><span class="badge">if</span>Basic_Firewall</div>
+      <div class="tower-desc">Dano crítico ×2 em STRING/INT.</div>
+      <div class="tower-cost"><span class="ram-icon">▣</span> 50 MB RAM</div>
+    </div>
+
+    <div class="tower-card" id="card-loop" onclick="selectTower('loop')">
+      <div class="tower-name"><span class="badge">for</span>Loop_Cannon</div>
+      <div class="tower-desc">Múltiplos alvos em sequência.</div>
+      <div class="tower-cost"><span class="ram-icon">▣</span> 75 MB RAM</div>
+    </div>
+
+    <div class="tower-card" id="card-debug" onclick="selectTower('debug')">
+      <div class="tower-name"><span class="badge">~~</span>Debug_Buffer</div>
+      <div class="tower-desc">Aplica slow 50% nos bugs.</div>
+      <div class="tower-cost"><span class="ram-icon">▣</span> 65 MB RAM</div>
+    </div>
+
+    <div class="tower-card" id="card-regex" onclick="selectTower('regex')">
+      <div class="tower-name"><span class="badge">/**/</span>Regex_Bomb</div>
+      <div class="tower-desc">Explosão em área. Dano a todos.</div>
+      <div class="tower-cost"><span class="ram-icon">▣</span> 100 MB RAM</div>
+    </div>
+
+    <div class="tower-card" id="card-ramextract" onclick="selectTower('ramextract')">
+      <div class="tower-name" style="color:#00e5ff"><span class="badge" style="color:#00e5ff;border-color:#007a99">RAM</span>RAM_Extractor</div>
+      <div class="tower-desc" style="color:#007a99">Gera +15 MB RAM a cada 5s. Não ataca.</div>
+      <div class="tower-cost"><span class="ram-icon">▣</span> 80 MB RAM</div>
+    </div>
+
+    <hr class="divider">
+    <div class="sidebar-title">&gt; sys_log</div>
+    <div id="log-box"></div>
+  </div>
+
+  <!-- CANVAS -->
+  <div id="canvas-wrap">
+    <canvas id="gameCanvas"></canvas>
+    <!-- malware popups go here -->
+  </div>
+
+  <!-- RIGHT PANEL -->
+  <div id="right-panel">
+    <div class="panel-section">
+      <div class="panel-title">&gt; node_info</div>
+      <div id="selected-info">
+        <div style="color:var(--text-dim); font-size:10px">
+          Selecione uma torre no painel<br>e clique no grid para instalar.<br><br>
+          Clique numa torre instalada<br>para upgrade/remoção.
+        </div>
+      </div>
+    </div>
+
+    <hr class="divider">
+
+    <div class="panel-section">
+      <div class="panel-title">&gt; controls</div>
+      <button class="btn btn-cyan" id="btn-wave" onclick="startWave()">▶ NEXT_WAVE</button>
+      <button class="btn" id="btn-auto" onclick="toggleAutoStart()">AUTO: OFF</button>
+      <button class="btn" id="btn-speed" onclick="toggleSpeed()" style="border-color:var(--green-dim);letter-spacing:1px">▷ SPEED: 1x</button>
+      <button class="btn btn-red" id="btn-sell" onclick="sellTower()" style="display:none">✕ REMOVE</button>
+      <button class="btn" onclick="deselectAll()" style="margin-top:4px">◌ DESELECT</button>
+      <button class="btn btn-menu" onclick="goToMenu()" style="margin-top:4px">⟵ MENU</button>
+    </div>
+
+    <hr class="divider">
+
+    <div id="wave-bar" class="panel-section">
+      <div class="panel-title">&gt; wave_progress</div>
+      <div class="progress-label">Bugs eliminados:</div>
+      <div class="progress-track"><div class="progress-fill" id="prog-bugs" style="width:0%"></div></div>
+      <div class="progress-label" style="margin-top:8px">Integridade:</div>
+      <div class="progress-track"><div class="progress-fill" id="prog-lives" style="width:100%"></div></div>
+      <div style="font-size:9px; color:var(--text-dim); margin-top:10px; line-height:1.7">
+        <span style="color:var(--green)">■</span> Caminho<br>
+        <span style="color:var(--cyan)">◉</span> Torre ativa<br>
+        <span style="color:var(--text-dim)">□</span> Slot livre
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- UPGRADE MODAL -->
+<div id="upgrade-modal">
+  <div id="modal-box">
+    <div id="modal-title">UPGRADE_CHALLENGE</div>
+    <div id="modal-sub">Complete a lógica para desbloquear:</div>
+    <div id="modal-challenge"></div>
+    <div class="option-row" id="modal-options"></div>
+    <div id="modal-feedback"></div>
+    <div class="modal-actions">
+      <button class="btn btn-red" id="modal-cancel" onclick="closeModal()">CANCELAR</button>
+      <button class="btn btn-cyan" id="modal-understood" onclick="closeModal()" style="display:none">ENTENDIDO</button>
+    </div>
+  </div>
+</div>
+
+<!-- EXIT CONFIRM MODAL -->
+<div id="confirm-modal">
+  <div id="confirm-box">
+    <div id="confirm-title">ABORTAR PARTIDA?</div>
+    <div id="confirm-msg">
+      A wave em andamento será encerrada e o progresso desta sessão será perdido.
+      Confirme apenas se quiser voltar ao menu principal.
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-cyan" onclick="closeExitConfirm()">CONTINUAR DEFESA</button>
+      <button class="btn btn-red" onclick="confirmExitToMenu()">SAIR DA PARTIDA</button>
+    </div>
+  </div>
+</div>
+
+<!-- GAME OVER OVERLAY -->
+<div id="overlay">
+  <div id="overlay-title">GAME_OVER</div>
+  <div id="overlay-msg">SISTEMA COMPROMETIDO</div>
+  <div id="overlay-score">SCORE: <span id="final-score">0</span></div>
+  <div id="overlay-stats"></div>
+  <button class="btn btn-cyan" onclick="resetGame()" style="margin-top:16px; padding:10px 30px; font-size:13px">⟳ REINICIAR</button>
+  <button class="btn btn-menu" onclick="goToMenu(true)" style="margin-top:6px; padding:8px 24px; font-size:10px">⟵ MENU PRINCIPAL</button>
+</div>
+
+<script>
+// ===== CANVAS SETUP =====
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
+const CELL = 44, COLS = 18, ROWS = 13;
+canvas.width = COLS * CELL; canvas.height = ROWS * CELL;
+
+// ===== MAPS =====
+const MAPS = {
+  standard: [
+    [0,2],[1,2],[2,2],[3,2],[3,3],[3,4],[3,5],[4,5],[5,5],[6,5],
+    [6,4],[6,3],[6,2],[7,2],[8,2],[9,2],[10,2],[10,3],[10,4],[10,5],
+    [10,6],[10,7],[9,7],[8,7],[7,7],[6,7],[5,7],[5,8],[5,9],[5,10],
+    [6,10],[7,10],[8,10],[9,10],[10,10],[11,10],[12,10],[12,9],[12,8],
+    [12,7],[12,6],[13,6],[14,6],[15,6],[16,6],[17,6]
+  ],
+  datacenter: [
+    [0,6],[1,6],[2,6],[3,6],[3,5],[3,4],[2,4],[1,4],[1,3],[1,2],
+    [2,2],[3,2],[4,2],[5,2],[6,2],[6,3],[6,4],[7,4],[8,4],[9,4],
+    [9,5],[9,6],[9,7],[8,7],[7,7],[6,7],[5,7],[5,8],[5,9],[6,9],
+    [7,9],[8,9],[9,9],[10,9],[11,9],[11,8],[11,7],[12,7],[13,7],[14,7],
+    [14,6],[14,5],[13,5],[12,5],[11,5],[10,5]
+  ]
+};
+let PATH = MAPS.standard.slice();
+let PATH_SET = new Set(PATH.map(([c,r])=>`${c},${r}`));
+
+// ===== DIFFICULTY CONFIG =====
+const DIFF_CONFIG = {
+  easy:   { ram: 300, ramMult: 1.2, hpMult: 0.75, speedMult: 0.85, scoreMult: 1.0, label: 'JUNIOR', cls: 'easy' },
+  normal: { ram: 200, ramMult: 1.0, hpMult: 1.0,  speedMult: 1.0,  scoreMult: 1.5, label: 'PLENO',  cls: 'normal' },
+  hard:   { ram: 100, ramMult: 0.7, hpMult: 1.5,  speedMult: 1.25, scoreMult: 3.0, label: 'SENIOR', cls: 'hard' }
+};
+let selectedDiff = 'normal';
+let selectedMap  = 'standard';
+
+// ===== STATE =====
+let state = {};
+function initState() {
+  const dc = DIFF_CONFIG[selectedDiff];
+  state = {
+    playerName: 'Anon',
+    difficulty: selectedDiff,
+    ram: dc.ram, lives: 10, score: 0,
+    wave: 0, maxWaves: 21,
+    waveActive: false,
+    towers: [], bugs: [], projectiles: [], particles: [],
+    bugSpawnQueue: [], spawnTimer: 0, spawnInterval: 40,
+    bugsThisWave: 0, bugsKilled: 0,
+    towerIdCounter: 0,
+    selectedTowerType: null, selectedTowerObj: null,
+    gameOver: false, won: false, tick: 0,
+    isPerfectRun: true, finalScore: 0, scoreFinalized: false,
+    floatingTexts: [],
+    pendingUpgradePath: null,
+    autoStart: false,
+    educationalMode: true, // true = educational, false = arcade
+    // status effects
+    ramLeakTimer: 0, cpuThrottleTimer: 0,
+    // boss
+    currentBoss: null,
+    // terminal zero
+    corruptedTrail: [], // [{col, row}] data corruption trail
+    // sql injector data fragments
+    dataFragments: [],
+    // malware popups
+    popupCooldown: 0, activePopups: [], malwareDrainTicker: 0,
+    // stats
+    totalKills: 0, totalRamEarned: 0, wavesCompleted: 0,
+  };
+}
+initState();
+
+const SCOREBOARD_KEY = 'codeDefenderTop10_v2';
+
+function addScore(basePoints) {
+  const dc = DIFF_CONFIG[state.difficulty] || DIFF_CONFIG.normal;
+  const points = Math.floor(basePoints * dc.scoreMult);
+  state.score += points;
+  return points;
+}
+
+function getWaveHpScale(wave = state.wave) {
+  return Math.pow(1.2, Math.floor(Math.max(0, wave - 1) / 2));
+}
+
+function getMalwareDrainPerSecond() {
+  return Math.round(2 + Math.max(0, state.wave - 1) * (23 / 9));
+}
+
+function escapeHTML(value) {
+  return String(value ?? '').replace(/[&<>"']/g, ch => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+  }[ch]));
+}
+
+function loadScores() {
+  try {
+    const raw = localStorage.getItem(SCOREBOARD_KEY);
+    const parsed = raw ? JSON.parse(raw) : [];
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
+
+function saveScores(scores) {
+  try { localStorage.setItem(SCOREBOARD_KEY, JSON.stringify(scores)); } catch {}
+}
+
+function qualifiesForScoreboard(score) {
+  const scores = loadScores();
+  return scores.length < 10 || score > Math.min(...scores.map(s => s.score || 0));
+}
+
+function recordScore(finalScore, won) {
+  if (!qualifiesForScoreboard(finalScore)) return false;
+  const dc = DIFF_CONFIG[state.difficulty] || DIFF_CONFIG.normal;
+  const entry = {
+    player: state.playerName || 'Anon',
+    score: finalScore,
+    difficulty: dc.label,
+    wave: state.wave,
+    won,
+    perfect: won && state.isPerfectRun,
+    date: new Date().toLocaleDateString('pt-BR')
+  };
+  const scores = [...loadScores(), entry]
+    .sort((a, b) => (b.score || 0) - (a.score || 0))
+    .slice(0, 10);
+  saveScores(scores);
+  renderScoreboard();
+  return true;
+}
+
+function renderScoreboard() {
+  const list = document.getElementById('scoreboard-list');
+  if (!list) return;
+  const scores = loadScores();
+  if (!scores.length) {
+    list.innerHTML = '<div class="score-empty">Nenhum registro ainda.<br>Defenda o sistema e grave seu nome no terminal.</div>';
+    return;
+  }
+  list.innerHTML = scores.map((s, i) => `
+    <div class="score-row">
+      <div class="score-rank">#${i + 1}</div>
+      <div>
+        <div class="score-player">${escapeHTML(s.player || 'Anon')}</div>
+        <div class="score-meta">${escapeHTML(s.difficulty || 'PLENO')} · W${s.wave || 0}${s.perfect ? ' · PERFECT' : ''}</div>
+      </div>
+      <div class="score-points">${Number(s.score || 0).toLocaleString('pt-BR')}</div>
+    </div>
+  `).join('');
+}
+
+function clearMalwarePopups() {
+  document.querySelectorAll('.malware-popup').forEach(p => p.remove());
+  state.activePopups = [];
+}
+
+// ===== TOWER DEFS (custos rebalanceados) =====
+const TOWER_DEFS = {
+  firewall: {
+    name:'Basic_Firewall', badge:'if',
+    color:'#00ff41', color2:'#003311',
+    cost:50, range:3.5, fireRate:60, dmg:28, multiShot:1,
+    slow:0, aoe:0, desc:'Dano crítico ×2 em STRING/INT', symbol:'F',
+    sellValue: 20,
+    paths: {
+      IF_ELSE_BLOCK: { name:'IF_ELSE_BLOCK', desc:'Foco em DANO consistente', dmgBonus:12, rangeBonus:0, multiShotBonus:0, fireRateReduce:0, symbol:'E', color:'#66ff66', color2:'#003f00' },
+      ELSE_IF_CHAIN: { name:'ELSE_IF_CHAIN', desc:'Foco em ALCANCE e múltiplos alvos', dmgBonus:0, rangeBonus:1.2, multiShotBonus:1, fireRateReduce:0, symbol:'≡', color:'#00ff99', color2:'#002f1a' }
+    }
+  },
+  loop: {
+    name:'Loop_Cannon', badge:'for',
+    color:'#00e5ff', color2:'#001a22',
+    cost:75, range:3, fireRate:45, dmg:14, multiShot:3, slow:0, aoe:0,
+    desc:'Atira em múltiplos bugs', symbol:'∀', sellValue:30,
+    paths: {
+      WHILE_RECURSION:{ name:'WHILE_RECURSION', desc:'Slow adicional em área', slowBonus:0.3, fireRateReduce:5, symbol:'ω', color:'#88e6ff', color2:'#001529' },
+      NESTED_FOR:     { name:'NESTED_FOR', desc:'Mais disparos simultâneos', multiShotBonus:2, rangeBonus:0.5, symbol:'∑', color:'#66dfff', color2:'#001733' }
+    }
+  },
+  debug: {
+    name:'Debug_Buffer', badge:'~~',
+    color:'#ffe600', color2:'#1a1400',
+    cost:65, range:3, fireRate:50, dmg:10, multiShot:1, slow:0.5, aoe:0,
+    desc:'Aplica slow 50% nos bugs', symbol:'D', sellValue:25,
+    paths: {
+      TRY_CATCH_SHIELD:{ name:'TRY_CATCH_SHIELD', desc:'Dano em área ao redor', dmgBonus:8, aoeAdd:1.2, symbol:'⊚', color:'#fff38a', color2:'#3a2e00' },
+      BREAK_CONTINUE:  { name:'BREAK_CONTINUE', desc:'Paralisa bugs ao acertar', paralyzeOnHit:60, symbol:'∥', color:'#ffd84a', color2:'#2a1f00' }
+    }
+  },
+  regex: {
+    name:'Regex_Bomb', badge:'/**/',
+    color:'#ff8c00', color2:'#1a0800',
+    cost:100, range:2.5, fireRate:90, dmg:55, multiShot:1, slow:0, aoe:1.5,
+    desc:'Explosão em área, dano a todos', symbol:'R', sellValue:40, paths:{}
+  },
+  ramextract: {
+    name:'RAM_Extractor', badge:'RAM',
+    color:'#00e5ff', color2:'#001a22',
+    cost:80, range:0, fireRate:0, dmg:0, multiShot:0, slow:0, aoe:0,
+    desc:'Gera +15 MB RAM a cada 5s. Não ataca.', symbol:'⊕', sellValue:35, paths:{},
+    isGenerator:true, genAmount:15, genInterval:300 // 5s at 60fps
+  }
+};
+
+// ===== BUG TYPES =====
+const BUG_TYPES = [
+  { label:'STR', type:'STRING',    tag:'STRING',    color:'#ff5588', hp:60,  speed:1.0, ram:10 },
+  { label:'INT', type:'INTEGER',   tag:'INTEGER',   color:'#ff8c00', hp:80,  speed:0.8, ram:15 },
+  { label:'NUL', type:'NUL',       tag:'NULL',      color:'#888888', hp:40,  speed:1.4, ram:8  },
+  { label:'OBJ', type:'OBJ',       tag:'OBJECT',    color:'#bf5fff', hp:120, speed:0.6, ram:20 },
+  { label:'ARR', type:'ARR',       tag:'ARRAY',     color:'#00e5ff', hp:100, speed:0.9, ram:18 },
+  { label:'TRJ', type:'TROJAN',    tag:'TROJAN',    color:'#aa00ff', hp:260, speed:0.45,ram:30 },
+  { label:'WRM', type:'WORM',      tag:'WORM',      color:'#ffdd55', hp:70,  speed:1.0, ram:12 },
+  { label:'ENC', type:'ENCRYPTOR', tag:'ENCRYPTOR', color:'#55ccff', hp:180, speed:0.7, ram:25 }
+];
+
+// ===== BOSS DEFINITIONS =====
+const BOSS_DEFS = [
+  {
+    wave: 5, name: 'ROOT_EXPLOIT', label:'R00T', color:'#ff2d78',
+    hp: 800, speed: 0.5, ram: 80, size: 22,
+    ability: 'stealth', abilityTimer: 300, abilityCooldown: 300,
+    stealthDuration: 120,
+    desc: 'Silent Stealth — invisivel para torres por 2s a cada 5s'
+  },
+  {
+    wave: 10, name: 'SQL_INJECTOR', label:'SQL', color:'#bf5fff',
+    hp: 1500, speed: 0.4, ram: 150, size: 26,
+    ability: 'ram_drain', abilityTimer: 240, abilityCooldown: 240,
+    ramDrainAmount: 50,
+    desc: 'Fragmentos de dados drenam 50 RAM ao atingir o Core'
+  },
+  {
+    wave: 15, name: 'ZERO_DAY', label:'0DAY', color:'#ff8c00',
+    hp: 2800, speed: 0.3, ram: 350, size: 32,
+    ability: 'aura_corruption', abilityTimer: 1, abilityCooldown: 1,
+    corruptionRadius: 5,
+    fireRateDebuff: 0.4,
+    desc: 'Aura de Corrupcao — reduz Fire Rate das torres proximas em 40%'
+  },
+  {
+    wave: 21, name: 'TERMINAL_ZERO', label:'Ø', color:'#cc00ff',
+    hp: 3200, speed: 0.22, ram: 800, size: 38,
+    ability: 'kernel_panic', abilityTimer: 600, abilityCooldown: 600,
+    dataCorruption: true, dataCorruptionInterval: 1,
+    desc: 'O Boss Final. Kernel Panic desativa torres. Data Corruption reduz alcance.',
+    isFinalBoss: true
+  }
+];
+
+// ===== EXTENDED QUESTION BANK =====
+const UPGRADE_CHALLENGES = {
+  firewall: {
+    IF_ELSE_BLOCK: {
+      2: [
+        { level:'basic', prompt:'if (bug.health ___ 50) { fix(); }', options:['>','<','==','>='], correct:'>', explain:'Verifica se health é maior que 50.' },
+        { level:'basic', prompt:'Qual palavra chave executa código quando condição é FALSA?', options:['else','elif','otherwise','default'], correct:'else', explain:'"else" executa quando o if é falso.' },
+        { level:'inter', prompt:'Qual operador retorna true se AMBAS condições forem verdadeiras?', options:['&&','||','!','??'], correct:'&&', explain:'"&&" (AND lógico) exige ambas verdadeiras.' },
+        { level:'inter', prompt:'O que é "short-circuit evaluation" em if (a && b)?', options:['b não avaliado se a=false','a não avaliado nunca','b sempre avaliado','nenhuma das anteriores'], correct:'b não avaliado se a=false', explain:'JS para na primeira condição false do &&.' },
+      ],
+      3: [
+        { level:'adv', prompt:'O que Optional Chaining (?.) faz em: obj?.prop?.sub?', options:['retorna undefined se obj ou prop for nullish','lança erro','retorna null sempre','acessa prop forçado'], correct:'retorna undefined se obj ou prop for nullish', explain:'?. evita erros em cadeia de acessos.' },
+        { level:'adv', prompt:'Qual padrão usa if como type guard em TypeScript?', options:['typeof x === "string"','x instanceof String','x as string','String(x)'], correct:'typeof x === "string"', explain:'"typeof" funciona como type guard em TS.' },
+      ]
+    },
+    ELSE_IF_CHAIN: {
+      2: [
+        { level:'basic', prompt:'Qual operador encadeia testes adicionais?', options:['else if','else','elif','switch'], correct:'else if', explain:'else if permite checar outras condições.' },
+        { level:'inter', prompt:'Switch é equivalente a qual estrutura?', options:['múltiplos else if com ===','loops aninhados','try/catch','while'], correct:'múltiplos else if com ===', explain:'Switch usa === implícito em cada case.' },
+      ],
+      3: [
+        { level:'adv', prompt:'O que é "nullish coalescing" (??)? ', options:['retorna RHS se LHS é null/undefined','retorna RHS se LHS é falsy','operador de soma','desestruturação'], correct:'retorna RHS se LHS é null/undefined', explain:'"??" difere de "||": aceita 0 e "" como válidos.' },
+        { level:'adv', prompt:'const result = x ?? y ?? z — o que retorna?', options:['primeiro valor não-nullish','x sempre','y sempre','z sempre'], correct:'primeiro valor não-nullish', explain:'?? encadeia buscando o primeiro valor definido.' },
+      ]
+    }
+  },
+  loop: {
+    WHILE_RECURSION: {
+      2: [
+        { level:'basic', prompt:'while (i ___ 10) { i++; }', options:['<','==','>','<='], correct:'<', explain:'Loop executa enquanto i menor que 10.' },
+        { level:'inter', prompt:'Qual é o risco de recursão sem base case?', options:['Stack Overflow','Syntax Error','TypeError','RangeError de index'], correct:'Stack Overflow', explain:'Sem caso base, a pilha de chamadas estoura.' },
+        { level:'inter', prompt:'O que é memoização em recursão?', options:['cachear resultados já calculados','chamar duas vezes','usar loops em vez de recursão','evitar funções puras'], correct:'cachear resultados já calculados', explain:'Memoização evita recalcular subproblemas.' },
+      ],
+      3: [
+        { level:'adv', prompt:'Generator functions usam qual palavra-chave para pausar?', options:['yield','await','pause','return'], correct:'yield', explain:'"yield" pausa a generator e retorna o valor.' },
+        { level:'adv', prompt:'Qual diferença entre for...of e for...in?', options:['of itera valores, in itera chaves','of itera chaves, in itera valores','são idênticos','of é mais lento'], correct:'of itera valores, in itera chaves', explain:'"for...of" usa iteráveis; "for...in" enumera propriedades.' },
+      ]
+    },
+    NESTED_FOR: {
+      2: [
+        { level:'basic', prompt:'Complexidade de loop duplo O(n) dentro de O(n)?', options:['O(n²)','O(2n)','O(n+n)','O(log n)'], correct:'O(n²)', explain:'Produto das iterações = n×n = n².' },
+        { level:'inter', prompt:'Array.flat(Infinity) serve para?', options:['achatar arrays aninhados arbitrariamente','somar elementos','ordenar','copiar array'], correct:'achatar arrays aninhados arbitrariamente', explain:'.flat(Infinity) remove toda profundidade de aninhamento.' },
+      ],
+      3: [
+        { level:'adv', prompt:'Array.flatMap() é equivalente a?', options:['.map().flat(1)','.flat().map()','reduce+concat','Object.entries'], correct:'.map().flat(1)', explain:'flatMap mapeia e aplana 1 nível em uma passagem.' },
+        { level:'adv', prompt:'O que é "trampolining" em loops recursivos?', options:['converter recursão em loop iterativo','chamar função em setTimeout','memoizar recursão','usar WebWorkers'], correct:'converter recursão em loop iterativo', explain:'Trampolining evita stack overflow convertendo em iteração.' },
+      ]
+    }
+  },
+  debug: {
+    TRY_CATCH_SHIELD: {
+      2: [
+        { level:'basic', prompt:'try { } catch (e) { } — propósito do catch?', options:['capturar erros lançados','melhorar velocidade','criar loops','declarar variáveis'], correct:'capturar erros lançados', explain:'catch intercepta exceções do bloco try.' },
+        { level:'inter', prompt:'O bloco "finally" executa...', options:['sempre, com ou sem erro','só com erro','só sem erro','nunca em async'], correct:'sempre, com ou sem erro', explain:'finally sempre roda, ideal para limpeza.' },
+        { level:'inter', prompt:'Error.name retorna?', options:['tipo do erro','mensagem','stack trace','código HTTP'], correct:'tipo do erro', explain:'Error.name retorna "TypeError", "RangeError", etc.' },
+      ],
+      3: [
+        { level:'adv', prompt:'Como capturar erro em async/await?', options:['try/catch ao redor do await','callback de erro','Promise.race','event listener'], correct:'try/catch ao redor do await', explain:'try/catch funciona normalmente com async/await.' },
+        { level:'adv', prompt:'O que é "error boundary" em React?', options:['componente que captura erros em filhos','hook de erro','middleware','interceptor HTTP'], correct:'componente que captura erros em filhos', explain:'ErrorBoundary usa componentDidCatch() para isolar falhas.' },
+      ]
+    },
+    BREAK_CONTINUE: {
+      2: [
+        { level:'basic', prompt:'"continue" em um loop faz o quê?', options:['pula para próxima iteração','para o loop completamente','reinicia o programa','retorna valor'], correct:'pula para próxima iteração', explain:'continue avança sem executar o restante da iteração.' },
+        { level:'inter', prompt:'"break" com label em loop aninhado...', options:['sai do loop indicado pelo label','para apenas o loop interno','gera erro','ignora label'], correct:'sai do loop indicado pelo label', explain:'Labels permitem break/continue em loops externos.' },
+      ],
+      3: [
+        { level:'adv', prompt:'Symbol.iterator em um objeto customizado permite?', options:['usar o objeto em for...of','desestruturar como array','spread operator','JSON.stringify'], correct:'usar o objeto em for...of', explain:'Implementar Symbol.iterator torna o objeto iterável.' },
+        { level:'adv', prompt:'Qual método de Array PARA na primeira condição verdadeira?', options:['Array.some()','Array.every()','Array.find()','Array.filter()'], correct:'Array.some()', explain:'.some() retorna true e para ao achar o primeiro true.' },
+      ]
+    }
+  }
+};
+
+// ===== SIMPLIFIED EDUCATIONAL QUESTION BANK =====
+const EDU_CHALLENGES = {
+  firewall: {
+    IF_ELSE_BLOCK: {
+      2: [
+        { level:'basic', prompt:'Qual operador testa se um valor é maior que outro?', options:['>','<','===','!='], correct:'>', explain:'O operador > compara dois valores e retorna true quando o primeiro é maior.', code:'if (bug.hp > 50) {\n  firewall.block(bug);\n}' },
+        { level:'basic', prompt:'Qual bloco roda quando o if é falso?', options:['else','for','try','return'], correct:'else', explain:'else cria o caminho alternativo quando a condição do if não passa.', code:'if (safe) {\n  allow();\n} else {\n  block();\n}' }
+      ],
+      3: [
+        { level:'inter', prompt:'Qual operador exige duas condições verdadeiras?', options:['&&','||','!','??'], correct:'&&', explain:'&& é o “E lógico”: os dois lados precisam ser true.', code:'if (logged && hasToken) {\n  openPanel();\n}' },
+        { level:'inter', prompt:'Para testar igualdade de valor e tipo em JS, use:', options:['===','==','=','!=='], correct:'===', explain:'=== evita conversões automáticas e deixa a comparação mais previsível.', code:'if (role === "admin") {\n  grantAccess();\n}' }
+      ]
+    },
+    ELSE_IF_CHAIN: {
+      2: [
+        { level:'basic', prompt:'Como testar uma segunda condição depois do if?', options:['else if','repeat','catch','await'], correct:'else if', explain:'else if encadeia outra verificação antes do else final.', code:'if (risk > 80) {\n  block();\n} else if (risk > 40) {\n  scan();\n}' },
+        { level:'basic', prompt:'Qual estrutura é boa para comparar muitos casos fixos?', options:['switch','while','try','map'], correct:'switch', explain:'switch organiza várias opções conhecidas em blocos case.', code:'switch (type) {\n  case "virus": quarantine();\n  break;\n}' }
+      ],
+      3: [
+        { level:'inter', prompt:'Qual operador usa um valor padrão só quando há null/undefined?', options:['??','||','&&','!'], correct:'??', explain:'?? preserva valores válidos como 0 ou string vazia.', code:'const limit = config.limit ?? 10;\nscan(limit);' },
+        { level:'inter', prompt:'O operador ?. evita erro quando parte do objeto não existe.', options:['Verdadeiro','Falso','Só em CSS','Só em HTML'], correct:'Verdadeiro', explain:'?. interrompe o acesso e retorna undefined se encontrar null ou undefined.', code:'const city = user?.profile?.city;\nconsole.log(city);' }
+      ]
+    }
+  },
+  loop: {
+    WHILE_RECURSION: {
+      2: [
+        { level:'basic', prompt:'Qual loop roda enquanto uma condição for verdadeira?', options:['while','if','switch','catch'], correct:'while', explain:'while repete o bloco até a condição deixar de ser true.', code:'while (queue.length > 0) {\n  process(queue.shift());\n}' },
+        { level:'basic', prompt:'O que impede uma recursão infinita?', options:['caso base','console.log','CSS','parseInt'], correct:'caso base', explain:'O caso base é a condição que para as chamadas recursivas.', code:'function count(n) {\n  if (n === 0) return;\n  count(n - 1);\n}' }
+      ],
+      3: [
+        { level:'inter', prompt:'Qual palavra pula o restante da iteração atual?', options:['continue','break','throw','new'], correct:'continue', explain:'continue passa para a próxima volta do loop sem encerrar tudo.', code:'for (const bug of bugs) {\n  if (bug.safe) continue;\n  scan(bug);\n}' },
+        { level:'inter', prompt:'Qual palavra encerra um loop imediatamente?', options:['break','continue','await','case'], correct:'break', explain:'break sai do loop assim que a condição desejada aparece.', code:'for (const port of ports) {\n  if (port.open) break;\n}' }
+      ]
+    },
+    NESTED_FOR: {
+      2: [
+        { level:'basic', prompt:'Um for dentro de outro geralmente cresce como:', options:['O(n²)','O(1)','O(log n)','O(n)'], correct:'O(n²)', explain:'Dois loops aninhados multiplicam as passagens: n vezes n.', code:'for (const row of grid) {\n  for (const cell of row) {\n    scan(cell);\n  }\n}' },
+        { level:'basic', prompt:'Qual método percorre um array e cria outro?', options:['map','push','pop','typeof'], correct:'map', explain:'map transforma cada item e devolve um novo array.', code:'const ids = bugs.map(bug => bug.id);\nconsole.log(ids);' }
+      ],
+      3: [
+        { level:'inter', prompt:'Qual método filtra itens de um array?', options:['filter','join','slice','alert'], correct:'filter', explain:'filter mantém apenas os itens que passam no teste.', code:'const threats = packets.filter(p => p.bad);\nblock(threats);' },
+        { level:'inter', prompt:'Qual método soma/acumula valores de um array?', options:['reduce','find','includes','trim'], correct:'reduce', explain:'reduce carrega um acumulador de item em item.', code:'const total = bugs.reduce((sum, bug) => {\n  return sum + bug.hp;\n}, 0);' }
+      ]
+    }
+  },
+  debug: {
+    TRY_CATCH_SHIELD: {
+      2: [
+        { level:'basic', prompt:'Qual bloco captura erros de um try?', options:['catch','else','case','for'], correct:'catch', explain:'catch recebe a exceção lançada dentro do try.', code:'try {\n  deployPatch();\n} catch (err) {\n  rollback();\n}' },
+        { level:'basic', prompt:'finally executa mesmo se houver erro?', options:['Sim','Não','Só no Chrome','Só com loop'], correct:'Sim', explain:'finally roda após try/catch e é útil para limpeza.', code:'try {\n  connect();\n} finally {\n  closeConnection();\n}' }
+      ],
+      3: [
+        { level:'inter', prompt:'Como tratar erro ao usar await?', options:['try/catch','switch','for...in','CSS'], correct:'try/catch', explain:'await dentro de try permite capturar rejeições de Promises.', code:'try {\n  await scanNetwork();\n} catch (err) {\n  notify(err.message);\n}' },
+        { level:'inter', prompt:'throw serve para:', options:['lançar um erro','criar array','mudar cor','parar CSS'], correct:'lançar um erro', explain:'throw interrompe o fluxo e envia um erro para ser tratado.', code:'if (!token) {\n  throw new Error("Sem token");\n}' }
+      ]
+    },
+    BREAK_CONTINUE: {
+      2: [
+        { level:'basic', prompt:'continue em um loop faz:', options:['pular para a próxima volta','encerrar o app','criar função','salvar arquivo'], correct:'pular para a próxima volta', explain:'continue ignora o restante do bloco atual e segue o loop.', code:'for (const item of list) {\n  if (!item.active) continue;\n  run(item);\n}' },
+        { level:'basic', prompt:'break em um loop faz:', options:['sair do loop','repetir tudo','abrir modal','criar objeto'], correct:'sair do loop', explain:'break termina a repetição no ponto em que foi chamado.', code:'while (true) {\n  if (done) break;\n}' }
+      ],
+      3: [
+        { level:'inter', prompt:'Qual método encontra o primeiro item que passa no teste?', options:['find','filter','map','sort'], correct:'find', explain:'find retorna o primeiro item compatível e para a busca.', code:'const boss = bugs.find(bug => bug.isBoss);\nfocus(boss);' },
+        { level:'inter', prompt:'Qual método responde se algum item passa no teste?', options:['some','every','join','split'], correct:'some', explain:'some retorna true ao encontrar o primeiro item aprovado.', code:'const hasVirus = files.some(file => file.bad);\nalert(hasVirus);' }
+      ]
+    }
+  }
+};
+
+// ===== MALWARE POPUP TEMPLATES =====
+const POPUP_TEMPLATES = [
+  {
+    style: 'error-style', title: '⚠ CRITICAL ERROR',
+    icon: '💀', heading: 'FATAL: kernel32.dll',
+    body: 'Exceção não tratada no processo principal.\nEndereço: 0x00FF4100',
+    fakeBtn: 'OK — Fechar relatório', reward: 15, penalty: 'ram_leak'
+  },
+  {
+    style: 'ad-style', title: '🎁 VOCÊ GANHOU!',
+    icon: '🏆', heading: 'PRÊMIO DE 1TB DE RAM!',
+    body: 'Clique para reivindicar seu prêmio especial de aceleração de sistema.',
+    fakeBtn: '→ RESGATAR AGORA', reward: 20, penalty: 'cpu_throttle'
+  },
+  {
+    style: 'error-style', title: '🔴 VIRUS DETECTED',
+    icon: '🦠', heading: 'MALWARE.exe encontrado',
+    body: 'Ameaça crítica detectada em C:\\System32.\nRemovendo em 3... 2... 1...',
+    fakeBtn: 'SCAN COMPLETO', reward: 12, penalty: 'ram_leak'
+  },
+  {
+    style: 'ad-style', title: '📦 ATUALIZAÇÃO',
+    icon: '⚡', heading: 'Atualize para PRO!',
+    body: 'Sua licença expirou. Renove agora e ganhe\n500MB de RAM bônus!',
+    fakeBtn: '→ RENOVAR LICENÇA', reward: 18, penalty: 'cpu_throttle'
+  },
+  {
+    style: 'error-style', title: '🔒 ACCESS DENIED',
+    icon: '🚫', heading: 'Firewall bloqueado!',
+    body: 'Sua defesa foi comprometida.\nRequires elevated privileges to continue.',
+    fakeBtn: 'CONCEDER ACESSO', reward: 10, penalty: 'ram_leak'
+  }
+];
+
+// ===== HOME UI =====
+// Generate background code lines
+(function() {
+  const container = document.getElementById('bg-lines');
+  const lines = [
+    'const defend = async (threats) => { await Promise.all(threats.map(t => firewall.block(t))); };',
+    'for (let bug of network.packets) { if (bug.type === "MALWARE") { quarantine(bug); } }',
+    'class Firewall { constructor(rules) { this.rules = rules; this.active = true; } }',
+    'import { Scanner, Defender } from "@system/security"; export default new Defender();',
+    'while (network.isActive) { const threat = await scanner.next(); if (threat) patch(threat); }',
+    'try { execute(payload); } catch (e) { log.error(e); rollback(); notify("BREACH"); }',
+    'const tokens = jwt.verify(req.headers.auth, process.env.SECRET_KEY);',
+    'fs.watchFile("/var/log/auth.log", (cur, prev) => { if (cur.mtime > prev.mtime) analyze(cur); });',
+  ];
+  for (let i = 0; i < 12; i++) {
+    const span = document.createElement('span');
+    span.textContent = lines[i % lines.length];
+    span.style.top = (i * 9.5) + '%';
+    span.style.animationDelay = (i * -2) + 's';
+    span.style.animationDuration = (18 + i * 2) + 's';
+    container.appendChild(span);
+  }
+})();
+
+let arcadeModeSelected = false;
+
+function toggleGameMode() {
+  arcadeModeSelected = !arcadeModeSelected;
+  const track = document.getElementById('mode-switch-track');
+  const warning = document.getElementById('mode-warning');
+  const eduIndicator = document.getElementById('mode-edu-indicator');
+  const arcLabel = document.getElementById('arc-label-text');
+  if (arcadeModeSelected) {
+    track.classList.add('arcade');
+    warning.classList.add('visible');
+    eduIndicator.style.display = 'none';
+    arcLabel.style.color = 'var(--orange)';
+    arcLabel.style.fontWeight = '700';
+  } else {
+    track.classList.remove('arcade');
+    warning.classList.remove('visible');
+    eduIndicator.style.display = 'block';
+    arcLabel.style.color = '#664400';
+    arcLabel.style.fontWeight = 'normal';
+  }
+}
+
+function selectDiff(d) {
+  selectedDiff = d;
+  document.querySelectorAll('.diff-card').forEach(c => c.classList.remove('selected'));
+  document.getElementById('diff-' + d).classList.add('selected');
+}
+
+function selectMap(m) {
+  selectedMap = m;
+  document.querySelectorAll('.map-card').forEach(c => c.classList.remove('selected'));
+  document.getElementById('map-' + m).classList.add('selected');
+}
+
+function setMap(mapKey) {
+  PATH = MAPS[mapKey].slice();
+  PATH_SET = new Set(PATH.map(([c,r])=>`${c},${r}`));
+}
+
+function startSession() {
+  const name = document.getElementById('player-name').value.trim();
+  const dc = DIFF_CONFIG[selectedDiff];
+  initState();
+  state.playerName = name || 'Anon';
+  state.ram = dc.ram;
+  state.difficulty = selectedDiff;
+  state.educationalMode = !arcadeModeSelected;
+  setMap(selectedMap);
+  document.getElementById('home-overlay').style.display = 'none';
+  document.getElementById('btn-wave').disabled = false;
+  document.getElementById('player-tag').textContent = `[ ${state.playerName.toUpperCase()} ]`;
+  const dtag = document.getElementById('difficulty-tag');
+  dtag.textContent = dc.label;
+  dtag.className = dc.cls;
+  updateUI();
+  const modeMsg = state.educationalMode ? 'MODO EDUCATIVO ativo — Score 100%' : '⚡ MODO ARCADE ativo — Score x0.6';
+  log(`Sessão iniciada — ${state.playerName} | Dificuldade: ${dc.label}`, 'info');
+  log(modeMsg, state.educationalMode ? 'ok' : 'warn');
+  log(`RAM inicial: ${state.ram} MB`, 'ok');
+  // Apply shop bonuses (defined later in shop section)
+  if (typeof applyShopBonuses === 'function') applyShopBonuses();
+  // Start cyber-cat if active
+  if (typeof spawnCyberCat === 'function') {
+    const _sd = loadShopData ? loadShopData() : null;
+    if (_sd && _sd.catOwned && _sd.catActive) spawnCyberCat();
+  }
+}
+
+function cancelSession() {
+  document.getElementById('home-overlay').style.display = 'none';
+  document.getElementById('btn-wave').disabled = true;
+}
+
+function goToMenu(force = false) {
+  if (!force && state.waveActive) {
+    requestExitToMenu();
+    return;
+  }
+  clearMalwarePopups();
+  state.gameOver = true;
+  document.getElementById('overlay').classList.remove('visible');
+  document.getElementById('confirm-modal').classList.remove('visible');
+  document.getElementById('terminal-zero-bar').classList.remove('visible');
+  document.getElementById('home-overlay').style.display = 'flex';
+  document.getElementById('player-name').value = state.playerName !== 'Anon' ? state.playerName : '';
+  initState();
+  updateUI();
+  renderScoreboard();
+  log('Sessão encerrada. Retornando ao menu.', 'warn');
+}
+
+let exitConfirmWasPaused = false;
+function requestExitToMenu() {
+  exitConfirmWasPaused = gamePaused;
+  gamePaused = true;
+  document.getElementById('confirm-modal').classList.add('visible');
+}
+
+function closeExitConfirm() {
+  document.getElementById('confirm-modal').classList.remove('visible');
+  gamePaused = exitConfirmWasPaused;
+}
+
+function confirmExitToMenu() {
+  document.getElementById('confirm-modal').classList.remove('visible');
+  goToMenu(true);
+}
+
+// ===== LOG / UI =====
+function log(msg, type='ok') {
+  const box = document.getElementById('log-box');
+  const d = document.createElement('div');
+  d.className = `log-${type}`;
+  d.textContent = `> ${msg}`;
+  box.appendChild(d);
+  box.scrollTop = box.scrollHeight;
+  if (box.children.length > 80) box.removeChild(box.children[0]);
+}
+
+function updateUI() {
+  const ramEl   = document.getElementById('stat-ram');
+  const livesEl = document.getElementById('stat-lives');
+  const scoreEl = document.getElementById('stat-score');
+  const waveEl  = document.getElementById('stat-wave');
+  document.getElementById('stat-maxwave').textContent = state.maxWaves;
+  ramEl.textContent   = state.ram;
+  livesEl.textContent = state.lives;
+  scoreEl.textContent = state.score;
+  waveEl.textContent  = state.wave;
+  ramEl.className   = 'stat-val' + (state.ram < 60 ? ' danger' : state.ram < 100 ? ' warn' : '');
+  livesEl.className = 'stat-val' + (state.lives <= 3 ? ' danger' : state.lives <= 6 ? ' warn' : '');
+  const total = state.bugsThisWave || 1;
+  document.getElementById('prog-bugs').style.width = Math.min(100, state.bugsKilled / total * 100) + '%';
+  const lp = state.lives / 10 * 100;
+  const pb = document.getElementById('prog-lives');
+  pb.style.width = lp + '%';
+  pb.className = 'progress-fill' + (state.lives <= 3 ? ' red' : '');
+  // update status effects bar
+  const sb = document.getElementById('status-bar');
+  sb.innerHTML = '';
+  if (state.ramLeakTimer > 0) {
+    const el = document.createElement('div');
+    el.className = 'status-effect ram-leak';
+    el.textContent = `RAM LEAK (${Math.ceil(state.ramLeakTimer/60)}s)`;
+    sb.appendChild(el);
+  }
+  if (state.cpuThrottleTimer > 0) {
+    const el = document.createElement('div');
+    el.className = 'status-effect cpu-throttle';
+    el.textContent = `CPU THROTTLE (${Math.ceil(state.cpuThrottleTimer/60)}s)`;
+    sb.appendChild(el);
+  }
+}
+
+// ===== TOWERS =====
+function selectTower(type) {
+  if (state.gameOver) return;
+  state.selectedTowerType = type;
+  state.selectedTowerObj  = null;
+  document.getElementById('btn-sell').style.display = 'none';
+  document.querySelectorAll('.tower-card').forEach(c => c.classList.remove('selected'));
+  document.getElementById('card-' + type)?.classList.add('selected');
+  const def = TOWER_DEFS[type];
+  document.getElementById('selected-info').innerHTML = `
+    <div class="info-name">${def.name}</div>
+    <div style="color:var(--text-dim);font-size:9px;margin:4px 0">${def.desc}</div>
+    <div class="info-stat">Custo: ${def.cost} MB</div>
+    <div class="info-stat">Range: ${def.range} | DPS: ${def.dmg}</div>
+  `;
+}
+
+function placeTower(col, row) {
+  if (PATH_SET.has(`${col},${row}`)) return;
+  if (state.towers.find(t => t.col===col && t.row===row)) return;
+  const def = TOWER_DEFS[state.selectedTowerType];
+  if (state.ram < def.cost) { log(`RAM insuficiente! (${def.cost} MB necessário)`, 'err'); return; }
+  state.ram -= def.cost;
+  const id = ++state.towerIdCounter;
+  state.towers.push({
+    id, type: state.selectedTowerType, col, row,
+    x: col*CELL+CELL/2, y: row*CELL+CELL/2,
+    level: 1, path: null, cooldown: 0, disabled: 0
+  });
+  log(`${def.name} instalado em [${col},${row}]`, 'ok');
+  updateUI();
+}
+
+function clickTower(t) {
+  state.selectedTowerType = null;
+  state.selectedTowerObj  = t;
+  document.querySelectorAll('.tower-card').forEach(c => c.classList.remove('selected'));
+  document.getElementById('btn-sell').style.display = 'block';
+  const def = TOWER_DEFS[t.type];
+  const pathDef = (def.paths && t.path) ? def.paths[t.path] : null;
+  const upgCost = def.cost;
+  const canUpg = t.level < 3 && state.ram >= upgCost;
+  document.getElementById('selected-info').innerHTML = `
+    <div class="info-name">${def.name}</div>
+    <div class="info-stat">Nível: ${t.level}/3</div>
+    <div class="info-stat">Caminho: ${t.path || 'base'}</div>
+    ${t.disabled > 0 ? '<div style="color:var(--red);font-size:9px">⚠ DESATIVADA!</div>' : ''}
+    <div style="margin-top:6px">
+      <button class="btn btn-cyan" style="width:100%;font-size:9px;margin-bottom:4px" ${t.level>=3?'disabled':''} onclick="openUpgradeModal()">
+        ▲ UPGRADE (${upgCost} MB)
+      </button>
+    </div>
+  `;
+}
+
+function sellTower() {
+  if (!state.selectedTowerObj) return;
+  const t = state.selectedTowerObj;
+  const def = TOWER_DEFS[t.type];
+  const refund = def.sellValue * t.level;
+  state.towers = state.towers.filter(x => x !== t);
+  state.ram += refund;
+  state.selectedTowerObj = null;
+  document.getElementById('btn-sell').style.display = 'none';
+  document.getElementById('selected-info').innerHTML = '<div style="color:var(--text-dim);font-size:10px">Torre removida.</div>';
+  log(`${def.name} removida. +${refund} MB RAM recuperado.`, 'warn');
+  updateUI();
+}
+
+function deselectAll() {
+  state.selectedTowerType = null;
+  state.selectedTowerObj  = null;
+  document.querySelectorAll('.tower-card').forEach(c => c.classList.remove('selected'));
+  document.getElementById('btn-sell').style.display = 'none';
+  document.getElementById('selected-info').innerHTML = '<div style="color:var(--text-dim);font-size:10px">Selecione uma torre no painel<br>e clique no grid para instalar.</div>';
+}
+
+// ===== WAVE / BUGS =====
+function startWave() {
+  if (state.gameOver || state.waveActive) return;
+  state.wave++;
+  const dc = DIFF_CONFIG[state.difficulty];
+
+  // Check boss wave
+  const bossDef = BOSS_DEFS.find(b => b.wave === state.wave);
+
+  // ESCALABILIDADE DE HORDA: fórmula agressiva Base + (Wave * 2.5) com fator exponencial aumentado
+  const BASE_BUGS = 14;
+  const count = Math.floor(BASE_BUGS + (state.wave * 2.5) + Math.floor(Math.pow(state.wave, 1.35)));
+  const hpScale = getWaveHpScale(state.wave) * dc.hpMult;
+
+  // PROGRESSÃO DINÂMICA SENIOR: a cada 2 rodadas +5% velocidade
+  let seniorSpeedBonus = 1;
+  if (state.difficulty === 'hard' && state.wave > 1) {
+    seniorSpeedBonus = 1 + (Math.floor((state.wave - 1) / 2) * 0.05);
+  }
+  const speedBoost = dc.speedMult * seniorSpeedBonus;
+
+  // INTERVALO DE SPAWN dinâmico: reduz com a wave (efeito enxame)
+  const baseInterval = 90;
+  const minInterval = 20;
+  state.spawnInterval = Math.max(minInterval, baseInterval - state.wave * 5);
+
+  state.waveActive = true;
+  state.bugsThisWave = count + (bossDef ? 1 : 0);
+  state.bugsKilled = 0;
+  state.bugSpawnQueue = [];
+
+  // Build queue
+  for (let i = 0; i < count; i++) {
+    const typeIdx = Math.min(BUG_TYPES.length - 1, Math.floor(Math.random() * Math.min(BUG_TYPES.length, 3 + Math.floor(state.wave/2))));
+    const bt = BUG_TYPES[typeIdx];
+    const hpVal = Math.max(4, Math.floor(bt.hp * hpScale));
+    state.bugSpawnQueue.push({ ...bt, hp: hpVal, maxHp: hpVal, speed: bt.speed * speedBoost });
+  }
+
+  // Boss spawn (at middle of wave)
+  if (bossDef) {
+    const seniorBossMult = state.difficulty === 'hard' ? 1.5 : 1;
+    const bossHp = Math.floor(bossDef.hp * hpScale * seniorBossMult);
+    const bossEntry = {
+      ...bossDef, hp: bossHp, maxHp: bossHp,
+      speed: bossDef.speed * speedBoost,
+      isBoss: true, size: bossDef.size,
+      dead: false, reached: false, slow:0, slowTimer:0, boostTimer:0,
+      slowResist: state.difficulty === 'hard' ? 0.55 : 0,
+      _origSpeed: bossDef.speed * speedBoost, _boosted: false,
+      abilityTimer: bossDef.abilityTimer,
+      id: Math.random()
+    };
+    // Insert boss after 1/3 of queue
+    const insertAt = Math.floor(count / 3);
+    state.bugSpawnQueue.splice(insertAt, 0, bossEntry);
+
+    if (bossDef.isFinalBoss) {
+      // Terminal Zero: special bar
+      document.getElementById('terminal-zero-bar').classList.add('visible');
+      document.getElementById('tz-bar-fill').style.width = '100%';
+      document.getElementById('tz-hp-text').textContent = `${bossHp} / ${bossHp}`;
+      document.getElementById('boss-bar').classList.remove('visible');
+    } else {
+      document.getElementById('boss-bar').classList.add('visible');
+      document.getElementById('boss-name').textContent = bossDef.name;
+      document.getElementById('boss-bar-fill').style.width = '100%';
+      document.getElementById('boss-hp-text').textContent = `${bossHp} HP`;
+    }
+    log(`⚠ BOSS WAVE! ${bossDef.name} se aproxima${state.difficulty === 'hard' ? ' com blindagem Senior' : ''}!`, 'boss');
+  }
+
+  state.spawnTimer = 0;
+  document.getElementById('btn-wave').disabled = true;
+  updateUI();
+  const seniorMsg = (state.difficulty === 'hard' && seniorSpeedBonus > 1) ? ` | Senior Speed x${seniorSpeedBonus.toFixed(2)}` : '';
+  log(`WAVE ${state.wave} — ${count} bugs | HP x${hpScale.toFixed(2)} | Interval: ${state.spawnInterval}t${seniorMsg}`, 'info');
+
+  // Wave 21: Terminal Zero final boss transition
+  if (state.wave === 21) {
+    state.isFinalBossWave = true;
+    log('⚠⚠⚠ WAVE 21 — TERMINAL_ZERO SE APROXIMA! ⚠⚠⚠', 'boss');
+    log('O CORE OVERLORD acordou. Derrote-o para vencer!', 'boss');
+  }
+
+  // Trigger malware popups during waves
+  state.popupCooldown = 600 + Math.random() * 600;
+}
+
+function spawnBugFromQueue() {
+  if (state.bugSpawnQueue.length === 0) return;
+  const item = state.bugSpawnQueue.shift();
+  const proto = { ...item };
+  const startPx = PATH[0][0]*CELL + CELL/2;
+  const startPy = PATH[0][1]*CELL + CELL/2;
+  if (proto.isBoss) {
+    state.bugs.push({
+      ...proto, pathIdx:0,
+      x: startPx, y: startPy,
+    });
+    state.currentBoss = state.bugs[state.bugs.length - 1];
+  } else {
+    state.bugs.push({
+      ...proto, pathIdx:0, x:startPx, y:startPy,
+      dead:false, reached:false, slow:0, slowTimer:0, boostTimer:0,
+      _origSpeed: proto.speed, _boosted:false, id: Math.random()
+    });
+  }
+}
+
+function spawnMiniAt(templateTag, x, y, pathIdx) {
+  const proto = BUG_TYPES.find(b => b.type===templateTag||b.tag===templateTag||b.label===templateTag);
+  if (!proto) return;
+  const dc = DIFF_CONFIG[state.difficulty];
+  const hpScale = getWaveHpScale(state.wave) * dc.hpMult;
+  const hpVal = Math.floor(proto.hp * 0.6 * hpScale);
+  state.bugs.push({
+    ...proto, pathIdx: pathIdx||0, x, y,
+    dead:false, reached:false, slow:0, slowTimer:0, boostTimer:0,
+    _origSpeed: proto.speed, _boosted:false, id: Math.random(),
+    hp: hpVal, maxHp: hpVal,
+    speed: proto.speed * dc.speedMult
+  });
+}
+
+// ===== MALWARE POPUPS =====
+function spawnMalwarePopup() {
+  const wrap = document.getElementById('canvas-wrap');
+  const wRect = wrap.getBoundingClientRect();
+  const tmpl = POPUP_TEMPLATES[Math.floor(Math.random() * POPUP_TEMPLATES.length)];
+
+  const popup = document.createElement('div');
+  popup.className = 'malware-popup ' + tmpl.style;
+  popup.dataset.reward = tmpl.reward;
+  popup.dataset.penalty = tmpl.penalty;
+  popup.dataset.drain = getMalwareDrainPerSecond();
+
+  const maxX = wRect.width - 270;
+  const maxY = wRect.height - 180;
+  popup.style.left = (40 + Math.random() * Math.max(0, maxX - 80)) + 'px';
+  popup.style.top  = (40 + Math.random() * Math.max(0, maxY - 80)) + 'px';
+
+  popup.innerHTML = `
+    <div class="popup-titlebar">
+      <span>${tmpl.title}</span>
+      <button class="popup-close" data-action="close">✕</button>
+    </div>
+    <div class="popup-body" data-action="body">
+      <span class="popup-icon">${tmpl.icon}</span>
+      <div class="popup-title-text">${tmpl.heading}</div>
+      <div style="white-space:pre-line">${tmpl.body}</div>
+      <div style="color:var(--red);font-size:9px;margin-top:6px">DRENO: -${popup.dataset.drain} MB RAM/s</div>
+      <div class="popup-fake-btn" data-action="fake">${tmpl.fakeBtn}</div>
+    </div>
+  `;
+
+  // Close button click — REWARD
+  popup.querySelector('.popup-close').addEventListener('click', (e) => {
+    e.stopPropagation();
+    const reward = parseInt(popup.dataset.reward);
+    state.ram += reward;
+    addFloat(wRect.left + 200, wRect.top + 100, `+${reward}MB BONUS!`, '#00ff41');
+    log(`Malware bloqueado! +${reward} MB RAM`, 'ok');
+    popup.remove();
+    state.activePopups = state.activePopups.filter(p => p !== popup);
+    updateUI();
+  });
+
+  // Body / fake button click — PENALTY
+  const applyPenalty = (e) => {
+    const penalty = popup.dataset.penalty;
+    const clickDrain = getMalwareDrainPerSecond();
+    state.ram = Math.max(0, state.ram - clickDrain);
+    addFloat(wRect.left + 200, wRect.top + 100, `-${clickDrain}MB`, '#ff2244');
+    if (penalty === 'ram_leak') {
+      state.ramLeakTimer = 300; // 5 seconds
+      log(`⚠ RAM LEAK ativado! Penalidade dinâmica: -${clickDrain} MB`, 'err');
+    } else if (penalty === 'cpu_throttle') {
+      state.cpuThrottleTimer = 300;
+      log(`⚠ CPU THROTTLE! Penalidade dinâmica: -${clickDrain} MB`, 'err');
+    }
+    popup.remove();
+    state.activePopups = state.activePopups.filter(p => p !== popup);
+    updateUI();
+  };
+
+  popup.querySelector('.popup-body').addEventListener('click', applyPenalty);
+  popup.querySelector('.popup-fake-btn').addEventListener('click', (e) => { e.stopPropagation(); applyPenalty(e); });
+
+  wrap.appendChild(popup);
+  state.activePopups.push(popup);
+  log(`⚠ MALWARE DETECTADO! Dreno ativo: -${popup.dataset.drain} MB/s por janela.`, 'warn');
+}
+
+// ===== UPDATE LOOP =====
+let gamePaused = false;
+let gameSpeed = 1; // 1 = normal, 2 = fast forward
+
+function toggleSpeed() {
+  gameSpeed = gameSpeed === 1 ? 2 : 1;
+  const btn = document.getElementById('btn-speed');
+  if (gameSpeed === 2) {
+    btn.textContent = '⚡ SPEED: 2x';
+    btn.style.borderColor = 'var(--yellow)';
+    btn.style.color = 'var(--yellow)';
+    btn.style.boxShadow = '0 0 10px rgba(255,230,0,0.4)';
+  } else {
+    btn.textContent = '▷ SPEED: 1x';
+    btn.style.borderColor = '';
+    btn.style.color = '';
+    btn.style.boxShadow = '';
+  }
+}
+
+function update() {
+  if (state.gameOver || gamePaused) return;
+  state.tick++;
+
+  state.activePopups = state.activePopups.filter(p => p.isConnected);
+  if (state.activePopups.length > 0) {
+    state.malwareDrainTicker++;
+    if (state.malwareDrainTicker >= 60) {
+      state.malwareDrainTicker = 0;
+      const drain = getMalwareDrainPerSecond();
+      const totalDrain = drain * state.activePopups.length;
+      state.ram = Math.max(0, state.ram - totalDrain);
+      addFloat(COLS*CELL/2, ROWS*CELL/2 - 24, `-${totalDrain} RAM MALWARE`, '#ff2244');
+      if (state.ram <= 0) log('⚠ RAM zerada por pop-ups persistentes. Feche as janelas pelo X.', 'err');
+      updateUI();
+    }
+  } else {
+    state.malwareDrainTicker = 0;
+  }
+
+  // RAM Leak effect
+  if (state.ramLeakTimer > 0) {
+    state.ramLeakTimer--;
+    if (state.tick % 60 === 0) {
+      state.ram = Math.max(0, state.ram - 5);
+      addFloat(COLS*CELL/2, ROWS*CELL/2, '-5 RAM LEAK', '#ff2244');
+      updateUI();
+    }
+  }
+
+  // CPU Throttle effect
+  if (state.cpuThrottleTimer > 0) {
+    state.cpuThrottleTimer--;
+    if (state.cpuThrottleTimer === 0) updateUI();
+  }
+
+  // Malware popup trigger
+  if (state.waveActive && state.activePopups.length < 6) {
+    state.popupCooldown--;
+    if (state.popupCooldown <= 0) {
+      spawnMalwarePopup();
+      state.popupCooldown = 800 + Math.random() * 800;
+    }
+  }
+
+  if (state.waveActive && state.bugSpawnQueue.length > 0) {
+    state.spawnTimer--;
+    if (state.spawnTimer <= 0) {
+      spawnBugFromQueue();
+      state.spawnTimer = state.spawnInterval;
+    }
+  }
+
+  // Move bugs
+  for (const bug of state.bugs) {
+    if (bug.dead || bug.reached) continue;
+    if (bug.slowTimer > 0) bug.slowTimer--;
+    if (bug.boostTimer > 0) {
+      bug.boostTimer--;
+      if (bug.boostTimer === 0 && bug._origSpeed) { bug.speed = bug._origSpeed; bug._boosted = false; }
+    }
+
+    // Boss ability
+    if (bug.isBoss && !bug.dead) {
+      bug.abilityTimer--;
+      if (bug.abilityTimer <= 0) {
+        bug.abilityTimer = bug.abilityCooldown;
+
+        // ROOT_EXPLOIT: Silent Stealth — invisible for 2s every 5s
+        if (bug.ability === 'stealth') {
+          bug.stealthActive = true;
+          bug.stealthTimer = bug.stealthDuration || 120;
+          bug.abilityGlowTimer = 60;
+          log(`ROOT_EXPLOIT ativou SILENT STEALTH! Torres cegas por 2s!`, 'boss');
+        }
+
+        // SQL_INJECTOR: shoot data fragment toward core
+        if (bug.ability === 'ram_drain') {
+          const drain = bug.ramDrainAmount || 50;
+          state.dataFragments = state.dataFragments || [];
+          const [ec, er] = PATH[PATH.length - 1];
+          const tx = ec * CELL + CELL / 2, ty = er * CELL + CELL / 2;
+          state.dataFragments.push({ x: bug.x, y: bug.y, tx, ty, life: 90, maxLife: 90, drain });
+          bug.abilityGlowTimer = 45;
+          log(`SQL_INJECTOR disparou fragmento de dados! -${drain} RAM se atingir o Core!`, 'boss');
+        }
+
+        // TERMINAL_ZERO: Kernel Panic — disable a random high-level tower for 3 seconds
+        if (bug.ability === 'kernel_panic') {
+          const highTowers = state.towers.filter(t => t.level >= 2 && t.disabled <= 0);
+          if (highTowers.length > 0) {
+            const target = highTowers[Math.floor(Math.random() * highTowers.length)];
+            target.disabled = 180; // 3 seconds at 60fps
+            addFloat(target.x, target.y - 20, '⚡ KERNEL PANIC!', '#ff8800');
+            log(`TERMINAL_ZERO usou KERNEL PANIC! Torre desativada por 3s!`, 'boss');
+            document.getElementById('tz-kp-badge').classList.add('active');
+            setTimeout(() => document.getElementById('tz-kp-badge').classList.remove('active'), 2000);
+          }
+        }
+      }
+
+      // Stealth tick-down
+      if (bug.stealthActive) {
+        bug.stealthTimer--;
+        if (bug.stealthTimer <= 0) { bug.stealthActive = false; }
+      }
+
+      // ZERO_DAY aura_corruption: continuous aura affecting nearby towers
+      if (bug.ability === 'aura_corruption' && !bug.dead) {
+        const corrRadius = (bug.corruptionRadius || 5) * CELL;
+        const debuff = bug.fireRateDebuff || 0.4;
+        for (const tower of state.towers) {
+          const dist = Math.hypot(tower.x - bug.x, tower.y - bug.y);
+          tower.corruptionDebuff = dist <= corrRadius ? debuff : 0;
+        }
+        if (!bug.corruptionLogged) {
+          bug.corruptionLogged = true;
+          log(`ZERO_DAY — Aura de Corrupcao ativa! Fire Rate -40% em raio proximo!`, 'boss');
+        }
+      }
+
+      // TERMINAL_ZERO: Data Corruption — leave corrupted trail every 15 frames
+      if (bug.isFinalBoss && bug.dataCorruption) {
+        bug._dcTimer = (bug._dcTimer || 0) + 1;
+        if (bug._dcTimer >= 15) {
+          bug._dcTimer = 0;
+          const col = Math.floor(bug.x / CELL), row = Math.floor(bug.y / CELL);
+          if (!PATH_SET.has(`${col},${row}`)) {
+            state.corruptedTrail = state.corruptedTrail || [];
+            const exists = state.corruptedTrail.some(c => c.col === col && c.row === row);
+            if (!exists) {
+              state.corruptedTrail.push({ col, row, life: 600 });
+              document.getElementById('tz-dc-badge').classList.add('active');
+              setTimeout(() => document.getElementById('tz-dc-badge').classList.remove('active'), 1000);
+            }
+          }
+        }
+        // Apply range debuff to towers near corrupted trail
+        const corrSet = new Set((state.corruptedTrail||[]).map(c=>`${c.col},${c.row}`));
+        for (const tower of state.towers) {
+          let nearCorruption = false;
+          for (let dc2=-1; dc2<=1; dc2++) for (let dr=-1; dr<=1; dr++) {
+            if (corrSet.has(`${tower.col+dc2},${tower.row+dr}`)) { nearCorruption = true; break; }
+          }
+          tower.dataCorruptionDebuff = nearCorruption ? 0.5 : 0;
+        }
+      }
+
+      // Update TERMINAL_ZERO HP bar
+      if (bug.isFinalBoss) {
+        document.getElementById('tz-bar-fill').style.width = (bug.hp / bug.maxHp * 100) + '%';
+        document.getElementById('tz-hp-text').textContent = `${Math.max(0, bug.hp)} / ${bug.maxHp}`;
+      } else {
+        // Update normal boss HP bar
+        document.getElementById('boss-bar-fill').style.width = (bug.hp / bug.maxHp * 100) + '%';
+        document.getElementById('boss-hp-text').textContent = `${Math.max(0, bug.hp)} / ${bug.maxHp}`;
+      }
+    }
+
+    const slowFactor = (bug.slowTimer > 0 && bug.type !== 'ENCRYPTOR') ? (1 - (bug.slow||0)) : 1;
+    const spd = (bug.speed||0.6) * slowFactor * 1.5;
+
+    const nextIdx = bug.pathIdx + 1;
+    if (nextIdx >= PATH.length) {
+      bug.reached = true;
+      state.isPerfectRun = false;
+      if (bug.isFinalBoss) {
+        // TERMINAL_ZERO instant kills the core
+        state.lives = 0;
+        updateUI();
+        addFloat(bug.x, bug.y, '☠ CORE DESTROYED', '#cc00ff');
+        log('☠ TERMINAL_ZERO atingiu o Core — MORTE INSTANTÂNEA!', 'boss');
+        triggerGameOver();
+        document.getElementById('terminal-zero-bar').classList.remove('visible');
+        state.currentBoss = null;
+      } else if (bug.isBoss) {
+        // Normal boss deals 6 damage
+        const dmg = 6;
+        state.lives = Math.max(0, state.lives - dmg);
+        updateUI();
+        addFloat(bug.x, bug.y, `-${dmg} LIVES [BOSS]`, '#ff2244');
+        if (state.lives <= 0) triggerGameOver();
+        document.getElementById('boss-bar').classList.remove('visible');
+        state.currentBoss = null;
+      } else {
+        // Regular bug deals 1 damage
+        state.lives = Math.max(0, state.lives - 1);
+        updateUI();
+        addFloat(bug.x, bug.y, '-1 LIFE', '#ff2244');
+        if (state.lives <= 0) triggerGameOver();
+      }
+      continue;
+    }
+    const [nc, nr] = PATH[nextIdx];
+    const tx = nc*CELL+CELL/2, ty = nr*CELL+CELL/2;
+    const dx = tx-bug.x, dy = ty-bug.y; const dist = Math.sqrt(dx*dx+dy*dy);
+    if (dist < spd) { bug.x=tx; bug.y=ty; bug.pathIdx=nextIdx; } else { bug.x+=dx/dist*spd; bug.y+=dy/dist*spd; }
+  }
+
+  // RAM Generator towers
+  for (const tower of state.towers) {
+    const baseDef = TOWER_DEFS[tower.type];
+    if (baseDef && baseDef.isGenerator) {
+      tower.genTimer = (tower.genTimer || 0) + 1;
+      const interval = Math.max(120, baseDef.genInterval - (tower.level - 1) * 60);
+      const amount = baseDef.genAmount * tower.level;
+      if (tower.genTimer >= interval) {
+        tower.genTimer = 0;
+        state.ram += amount;
+        state.totalRamEarned += amount;
+        addFloat(tower.x, tower.y - 10, `+${amount}MB`, '#00e5ff');
+        updateUI();
+      }
+      tower._genPulse = (tower._genPulse || 0) + 1;
+    }
+  }
+
+  // Tower attacks
+  for (const tower of state.towers) {
+    if (TOWER_DEFS[tower.type]?.isGenerator) continue; // skip generators
+    if (tower.disabled > 0) { tower.disabled--; continue; }
+    tower.cooldown--;
+    if (tower.cooldown > 0) continue;
+    const base = TOWER_DEFS[tower.type];
+    const pathDef = (base.paths && tower.path) ? base.paths[tower.path] : {};
+    const throttleMult = state.cpuThrottleTimer > 0 ? 0.65 : 1;
+    const corruptMult = 1 - (tower.corruptionDebuff || 0); // 0.4 debuff = 0.6 rate
+    const dataCorruptRangeMult = 1 - (tower.dataCorruptionDebuff || 0); // 0.5 debuff from TZ trail
+    const effRange = ((base.range + (pathDef.rangeBonus||0) + (tower.level-1)*0.5) * CELL) * throttleMult * dataCorruptRangeMult;
+    const effDmg   = Math.floor((base.dmg + (pathDef.dmgBonus||0)) * tower.level * (typeof SHOP_DMG_MULT !== "undefined" ? SHOP_DMG_MULT : 1));
+    const effMulti = Math.max(1, base.multiShot + (pathDef.multiShotBonus||0));
+    const effSlow  = Math.max(0, (base.slow||0) + (pathDef.slowBonus||0));
+    const effAoe   = Math.max(0, (base.aoe||0) + (pathDef.aoeAdd||0));
+
+    const targets = state.bugs.filter(b => !b.dead && !b.reached && !b.stealthActive)
+      .map(b => ({ b, dist: Math.hypot(b.x-tower.x, b.y-tower.y) }))
+      .filter(o => o.dist <= effRange)
+      .sort((a,b) => a.b.pathIdx !== b.b.pathIdx ? b.b.pathIdx - a.b.pathIdx : a.dist - b.dist);
+
+    if (targets.length === 0) continue;
+    const shots = Math.min(effMulti, targets.length);
+    for (let i=0;i<shots;i++) {
+      const { b } = targets[i];
+      if (b.type === 'WORM' && !b._boosted) {
+        b._origSpeed = b.speed; b.speed = b.speed*1.5; b.boostTimer=120; b._boosted=true;
+        addFloat(b.x, b.y, 'SPEED↑', '#ffdd55');
+      }
+      let d = effDmg;
+      if (b.evolved && b.damageResist) d = Math.floor(d * (1 - b.damageResist));
+      if (tower.type === 'firewall' && (b.tag==='STRING'||b.tag==='INTEGER')) d *= 2;
+      if (effAoe > 0) {
+        const aoeR = effAoe*CELL;
+        state.bugs.forEach(eb => {
+          if (eb.dead||eb.reached) return;
+          if (Math.hypot(eb.x-b.x, eb.y-b.y) <= aoeR) {
+            eb.hp -= d; if (eb.hp <= 0) killBug(eb, tower);
+          }
+        });
+        addParticle(b.x, b.y, base.color, 'aoe', aoeR);
+      } else {
+        if (effSlow > 0 && b.type !== 'ENCRYPTOR') {
+          const resist = b.isBoss ? (b.slowResist || 0) : 0;
+          b.slow = Math.max(0, effSlow * (1 - resist));
+          b.slowTimer = b.isBoss ? 75 : 120;
+        }
+        if (pathDef.paralyzeOnHit) {
+          const stunTime = b.isBoss ? Math.floor(pathDef.paralyzeOnHit * (1 - (b.slowResist || 0))) : pathDef.paralyzeOnHit;
+          b.slowTimer = Math.max(b.slowTimer, stunTime);
+        }
+        b.hp -= d; if (b.hp <= 0) killBug(b, tower);
+      }
+      state.projectiles.push({ x:tower.x, y:tower.y, tx:b.x, ty:b.y, color:base.color, life:8 });
+    }
+    tower.cooldown = Math.max(6, Math.floor((base.fireRate - (pathDef.fireRateReduce||0)) / corruptMult));
+  }
+
+  state.projectiles = state.projectiles.filter(p => { p.life--; return p.life > 0; });
+  state.floatingTexts = state.floatingTexts.filter(f => { f.y -= 0.8; f.life--; f.alpha = f.life/f.maxLife; return f.life > 0; });
+  state.particles = state.particles.filter(p => { p.life--; p.x+=p.vx; p.y+=p.vy; p.alpha=p.life/p.maxLife; return p.life > 0; });
+
+  // Decay corrupted trail cells
+  if (state.corruptedTrail && state.corruptedTrail.length > 0) {
+    state.corruptedTrail = state.corruptedTrail.filter(c => { c.life--; return c.life > 0; });
+    // Re-evaluate tower debuffs after decay
+    const corrSet = new Set(state.corruptedTrail.map(c=>`${c.col},${c.row}`));
+    for (const tower of state.towers) {
+      let near = false;
+      for (let dc2=-1; dc2<=1 && !near; dc2++) for (let dr=-1; dr<=1 && !near; dr++) {
+        if (corrSet.has(`${tower.col+dc2},${tower.row+dr}`)) near = true;
+      }
+      tower.dataCorruptionDebuff = near ? 0.5 : 0;
+    }
+  }
+
+  // DATA FRAGMENTS (SQL_INJECTOR) — move toward core and drain RAM on arrival
+  state.dataFragments = (state.dataFragments || []).filter(frag => {
+    frag.life--;
+    const dx = frag.tx - frag.x, dy = frag.ty - frag.y;
+    const dist = Math.sqrt(dx*dx + dy*dy);
+    if (dist < 4) {
+      // Hit the core!
+      state.ram = Math.max(0, state.ram - frag.drain);
+      addFloat(frag.tx, frag.ty, `-${frag.drain} RAM DRAINED!`, '#bf5fff');
+      log(`Fragmento SQL atingiu o Core! -${frag.drain} MB RAM!`, 'err');
+      updateUI();
+      return false;
+    }
+    const spd = 2.5;
+    frag.x += dx / dist * spd;
+    frag.y += dy / dist * spd;
+    return frag.life > 0;
+  });
+
+  // RESISTÊNCIA EVOLUTIVA: bugs sobrevivendo >10s ganham 10% resistência + escudo visual
+  const survivalTicks = 600; // 10 seconds at 60fps
+  for (const bug of state.bugs) {
+    if (bug.dead || bug.reached) continue;
+    bug.survivalTime = (bug.survivalTime || 0) + 1;
+    if (bug.survivalTime >= survivalTicks && !bug.evolved) {
+      bug.evolved = true;
+      bug.damageResist = 0.10; // 10% damage reduction
+      addFloat(bug.x, bug.y - 10, 'EVOLVED!', '#00e5ff');
+    }
+  }
+
+  // OTIMIZAÇÃO: limpar bugs dead/reached do array principal
+  state.bugs = state.bugs.filter(b => !b.dead && !b.reached);
+
+  // Wave end
+  if (state.waveActive && state.bugSpawnQueue.length === 0 && state.bugs.length === 0) {
+    state.waveActive = false;
+    state.wavesCompleted++;
+    document.getElementById('btn-wave').disabled = false;
+    document.getElementById('boss-bar').classList.remove('visible');
+    document.getElementById('terminal-zero-bar').classList.remove('visible');
+    state.currentBoss = null;
+    state.dataFragments = [];
+    state.corruptedTrail = [];
+    state.isFinalBossWave = false;
+    for (const tower of state.towers) { tower.corruptionDebuff = 0; tower.dataCorruptionDebuff = 0; }
+    const dc = DIFF_CONFIG[state.difficulty];
+    const waveBonus = Math.floor(25 * dc.ramMult);
+    state.ram += waveBonus;
+    addScore(100 * state.wave);
+    updateUI();
+    log(`Wave ${state.wave} concluída! +${waveBonus} MB RAM`, 'info');
+    if (state.wave >= state.maxWaves) { setTimeout(()=>triggerWin(), 500); return; }
+    if (state.autoStart && state.wave < state.maxWaves) {
+      setTimeout(() => { if (!state.waveActive && !state.gameOver) startWave(); }, 3000);
+    }
+  }
+}
+
+function killBug(bug, tower) {
+  if (bug.dead) return;
+  bug.dead = true;
+  state.bugsKilled++;
+  state.totalKills++;
+  const dc = DIFF_CONFIG[state.difficulty];
+  const ramGain = Math.floor(bug.ram * dc.ramMult);
+  state.ram += ramGain;
+  state.totalRamEarned += ramGain;
+  addScore(bug.ram * 5 * (bug.isBoss ? 5 : 1));
+  addFloat(bug.x, bug.y, `+${ramGain}MB`, '#00ff41');
+  addParticle(bug.x, bug.y, bug.color, 'burst');
+  updateUI();
+  if (bug.isBoss) {
+    document.getElementById('boss-bar').classList.remove('visible');
+    document.getElementById('terminal-zero-bar').classList.remove('visible');
+    state.currentBoss = null;
+    state.corruptedTrail = [];
+    for (const tower of state.towers) { tower.dataCorruptionDebuff = 0; }
+    if (bug.isFinalBoss) {
+      state.ram += 500;
+      addFloat(bug.x, bug.y, '+500MB TERMINAL_ZERO!', '#cc00ff');
+      log(`⚡⚡⚡ TERMINAL_ZERO DESTRUÍDO! O Core está seguro! +500 MB RAM! ⚡⚡⚡`, 'boss');
+      // Trigger win immediately
+      setTimeout(() => triggerWin(), 800);
+    } else {
+      state.ram += 50;
+      addFloat(bug.x, bug.y, '+50MB BOSS!', '#ff2d78');
+      log(`BOSS derrotado! +50 MB bônus!`, 'boss');
+    }
+    // Clear any active corruption aura
+    for (const tower of state.towers) { tower.corruptionDebuff = 0; }
+  }
+  if (bug.type === 'TROJAN') {
+    spawnMiniAt('NUL', bug.x-8, bug.y+4, bug.pathIdx);
+    spawnMiniAt('NUL', bug.x+8, bug.y-4, bug.pathIdx);
+    log('TROJAN liberou 2 NULs!', 'warn');
+  }
+}
+
+function addFloat(x,y,text,color) { state.floatingTexts.push({x,y,text,color,life:50,maxLife:50,alpha:1}); }
+function addParticle(x,y,color,type,radius=0) {
+  if (type==='aoe') { state.particles.push({x,y,vx:0,vy:0,color,life:20,maxLife:20,alpha:1,type:'aoe',radius}); return; }
+  for (let i=0;i<8;i++) { const ang=Math.random()*Math.PI*2; const spd=1+Math.random()*2; state.particles.push({x,y,vx:Math.cos(ang)*spd,vy:Math.sin(ang)*spd,color,life:25,maxLife:25,alpha:1,type:'dot'}); }
+}
+
+// ===== DRAW =====
+function draw() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  // Grid
+  ctx.strokeStyle = '#121218'; ctx.lineWidth = 1;
+  for (let c=0;c<=COLS;c++) { ctx.beginPath(); ctx.moveTo(c*CELL,0); ctx.lineTo(c*CELL,canvas.height); ctx.stroke(); }
+  for (let r=0;r<=ROWS;r++) { ctx.beginPath(); ctx.moveTo(0,r*CELL); ctx.lineTo(canvas.width,r*CELL); ctx.stroke(); }
+
+  // Wave 21: Final boss background tint (deep crimson/purple)
+  if (state.isFinalBossWave || (state.wave === 21 && state.waveActive)) {
+    const pulse = (Math.sin(state.tick * 0.03) + 1) / 2;
+    ctx.fillStyle = `rgba(80,0,40,${0.08 + pulse * 0.06})`;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    // Vignette border glow
+    const grad = ctx.createRadialGradient(canvas.width/2, canvas.height/2, canvas.height*0.3, canvas.width/2, canvas.height/2, canvas.height);
+    grad.addColorStop(0, 'rgba(153,0,255,0)');
+    grad.addColorStop(1, `rgba(153,0,255,${0.1 + pulse * 0.08})`);
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+  }
+
+  // Corrupted trail from Terminal Zero
+  if (state.corruptedTrail && state.corruptedTrail.length > 0) {
+    for (const cell of state.corruptedTrail) {
+      const alpha = Math.min(1, cell.life / 120) * 0.65;
+      const pulse = (Math.sin(state.tick * 0.1 + cell.col + cell.row) + 1) / 2;
+      ctx.fillStyle = `rgba(153,0,255,${alpha * (0.3 + pulse * 0.2)})`;
+      ctx.fillRect(cell.col*CELL+1, cell.row*CELL+1, CELL-2, CELL-2);
+      ctx.strokeStyle = `rgba(255,0,100,${alpha * 0.5})`;
+      ctx.lineWidth = 1; ctx.strokeRect(cell.col*CELL+1, cell.row*CELL+1, CELL-2, CELL-2);
+      // Corruption symbol
+      ctx.fillStyle = `rgba(200,0,255,${alpha * 0.8})`;
+      ctx.font = '10px JetBrains Mono'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.fillText('☣', cell.col*CELL+CELL/2, cell.row*CELL+CELL/2);
+    }
+  }
+
+  // Path
+  for (let i=0;i<PATH.length;i++) {
+    const [c,r] = PATH[i];
+    const alpha = 0.7 - i/PATH.length*0.4;
+    ctx.fillStyle = `rgba(0,40,10,${alpha})`; ctx.fillRect(c*CELL+1, r*CELL+1, CELL-2, CELL-2);
+    if (i < PATH.length-1) {
+      const [nc,nr] = PATH[i+1];
+      ctx.strokeStyle='rgba(0,100,30,0.4)'; ctx.lineWidth=2;
+      ctx.beginPath(); ctx.moveTo(c*CELL+CELL/2, r*CELL+CELL/2); ctx.lineTo(nc*CELL+CELL/2, nr*CELL+CELL/2); ctx.stroke();
+    }
+  }
+  const [sc,sr] = PATH[0]; const [ec,er] = PATH[PATH.length-1];
+  ctx.fillStyle='#00ff41'; ctx.font='9px JetBrains Mono'; ctx.textAlign='center'; ctx.fillText('ENTRY', sc*CELL+CELL/2, sr*CELL-4);
+  ctx.fillStyle='#ff2244'; ctx.fillText('CORE', ec*CELL+CELL/2, er*CELL-4);
+
+  // Particles
+  for (const p of state.particles) {
+    if (p.type==='aoe') {
+      ctx.beginPath(); ctx.arc(p.x,p.y,p.radius*(1-p.alpha*0.5),0,Math.PI*2);
+      ctx.strokeStyle=p.color; ctx.lineWidth=2; ctx.stroke();
+    } else {
+      ctx.beginPath(); ctx.arc(p.x,p.y,2,0,Math.PI*2);
+      ctx.fillStyle=p.color; ctx.fill();
+    }
+  }
+
+  // Towers
+  for (const tower of state.towers) {
+    const def = TOWER_DEFS[tower.type];
+    const pathDef = def.paths && tower.path ? def.paths[tower.path] : null;
+    const x = tower.col*CELL, y = tower.row*CELL;
+    const sel = state.selectedTowerObj === tower;
+    const visColor  = pathDef?.color  || def.color;
+    const visColor2 = pathDef?.color2 || def.color2;
+    const visSymbol = pathDef?.symbol || def.symbol;
+    const isDisabled = tower.disabled > 0;
+
+    // RAM Extractor: special pulsing circular visual
+    if (def.isGenerator) {
+      const pulse = (Math.sin((tower._genPulse||0) * 0.06) + 1) / 2;
+      const outerR = 16 + pulse * 4;
+      // Outer pulsing ring
+      ctx.beginPath(); ctx.arc(tower.x, tower.y, outerR, 0, Math.PI*2);
+      ctx.strokeStyle = `rgba(0,229,255,${0.3 + pulse * 0.5})`;
+      ctx.lineWidth = 2; ctx.stroke();
+      ctx.fillStyle = `rgba(0,20,30,0.85)`; ctx.fill();
+      // Inner glowing circle
+      ctx.beginPath(); ctx.arc(tower.x, tower.y, 10 + pulse*2, 0, Math.PI*2);
+      ctx.fillStyle = `rgba(0,229,255,${0.15 + pulse * 0.2})`; ctx.fill();
+      ctx.strokeStyle = sel ? '#00e5ff' : `rgba(0,229,255,${0.6 + pulse*0.4})`;
+      ctx.lineWidth = sel ? 2 : 1.5; ctx.stroke();
+      // Rotating inner ticks
+      for (let ti=0; ti<4; ti++) {
+        const ang = (tower._genPulse||0) * 0.04 + ti * Math.PI / 2;
+        const r1=6, r2=12;
+        ctx.beginPath();
+        ctx.moveTo(tower.x + Math.cos(ang)*r1, tower.y + Math.sin(ang)*r1);
+        ctx.lineTo(tower.x + Math.cos(ang)*r2, tower.y + Math.sin(ang)*r2);
+        ctx.strokeStyle = `rgba(0,229,255,${0.5+pulse*0.4})`; ctx.lineWidth=1.5; ctx.stroke();
+      }
+      // Level dots
+      for (let l=0; l<tower.level; l++) {
+        ctx.beginPath(); ctx.arc(tower.x - 8 + l*8, tower.y + 16, 2, 0, Math.PI*2);
+        ctx.fillStyle = '#00e5ff'; ctx.fill();
+      }
+      // Symbol
+      ctx.fillStyle = sel ? '#00e5ff' : `rgba(0,229,255,${0.8+pulse*0.2})`;
+      ctx.font = 'bold 14px JetBrains Mono'; ctx.textAlign='center'; ctx.textBaseline='middle';
+      ctx.fillText('⊕', tower.x, tower.y);
+      // Badge
+      ctx.font='7px JetBrains Mono'; ctx.fillStyle='rgba(0,229,255,0.6)'; ctx.textBaseline='bottom';
+      ctx.fillText('RAM', tower.x, y+CELL-7);
+      continue;
+    }
+
+    if (sel) {
+      const throttleMult = state.cpuThrottleTimer > 0 ? 0.65 : 1;
+      const range = ((def.range + (pathDef?.rangeBonus||0)) + (tower.level-1)*0.5) * CELL * throttleMult;
+      ctx.beginPath(); ctx.arc(tower.x, tower.y, range, 0, Math.PI*2);
+      ctx.strokeStyle=visColor+'44'; ctx.lineWidth=1; ctx.stroke();
+      ctx.fillStyle=visColor+'08'; ctx.fill();
+    }
+
+    const displayColor = isDisabled ? '#555555' : visColor;
+    ctx.fillStyle = sel ? visColor2 : '#0e0e18';
+    ctx.strokeStyle = sel ? displayColor : displayColor+'88';
+    ctx.lineWidth = sel ? 2 : 1;
+    roundRect(ctx, x+4, y+4, CELL-8, CELL-8, 4); ctx.fill(); ctx.stroke();
+
+    for (let l=0;l<tower.level;l++) { ctx.fillStyle=displayColor; ctx.fillRect(x+6+l*6, y+6, 4, 3); }
+    ctx.fillStyle = isDisabled ? '#555555' : (sel ? visColor : visColor+'cc');
+    ctx.font = `bold 16px JetBrains Mono`; ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillText(isDisabled ? '⊘' : visSymbol, tower.x, tower.y);
+    ctx.font='7px JetBrains Mono'; ctx.fillStyle=displayColor+'99'; ctx.textBaseline='bottom';
+    ctx.fillText(def.badge, tower.x, y+CELL-7);
+  }
+
+  // Projectiles
+  for (const p of state.projectiles) {
+    ctx.beginPath(); ctx.moveTo(p.x,p.y); ctx.lineTo(p.tx,p.ty);
+    ctx.strokeStyle=p.color+'cc'; ctx.lineWidth=2; ctx.stroke();
+    ctx.beginPath(); ctx.arc(p.tx,p.ty,3,0,Math.PI*2);
+    ctx.fillStyle=p.color; ctx.fill();
+  }
+
+  // Bugs
+  for (const bug of state.bugs) {
+    const isBoss = bug.isBoss;
+    const s = isBoss ? (bug.size || 22) : 14;
+    const isSlowed = bug.slowTimer > 0;
+    const isStealthed = bug.stealthActive;
+
+    // Stealthed boss: draw semi-transparent with glitch effect
+    ctx.globalAlpha = isStealthed ? 0.25 : 1;
+    ctx.shadowColor=bug.color; ctx.shadowBlur=isSlowed?4:(isBoss?20:10);
+    ctx.fillStyle = isSlowed ? '#333' : bug.color+'33';
+    ctx.strokeStyle = isSlowed ? '#ffe60088' : bug.color;
+    ctx.lineWidth = isBoss ? 2.5 : 1.5;
+    if (isBoss) {
+      // Boss: diamond shape
+      ctx.beginPath();
+      ctx.moveTo(bug.x, bug.y-s); ctx.lineTo(bug.x+s, bug.y);
+      ctx.lineTo(bug.x, bug.y+s); ctx.lineTo(bug.x-s, bug.y);
+      ctx.closePath(); ctx.fill(); ctx.stroke();
+
+      // TERMINAL_ZERO: rotating outer rings
+      if (bug.isFinalBoss) {
+        const rot = state.tick * 0.03;
+        for (let ri = 0; ri < 3; ri++) {
+          const rAngle = rot + (ri * Math.PI * 2 / 3);
+          const rr = s + 8 + ri * 6;
+          ctx.beginPath();
+          ctx.arc(bug.x, bug.y, rr, rAngle, rAngle + Math.PI * 1.3);
+          ctx.strokeStyle = `rgba(${ri===0?'255,0,100':ri===1?'153,0,255':'255,136,0'},0.7)`;
+          ctx.lineWidth = 2; ctx.stroke();
+        }
+        // Inner pulsing core
+        const corePulse = (Math.sin(state.tick * 0.08) + 1) / 2;
+        ctx.beginPath(); ctx.arc(bug.x, bug.y, s * 0.4 + corePulse * 4, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(255,255,255,${0.3 + corePulse * 0.4})`; ctx.fill();
+      }
+
+      // ZERO_DAY corruption aura visual
+      if (bug.ability === 'aura_corruption') {
+        const corrRadius = (bug.corruptionRadius || 5) * CELL;
+        const pulse = (Math.sin(state.tick * 0.05) + 1) / 2;
+        ctx.beginPath(); ctx.arc(bug.x, bug.y, corrRadius, 0, Math.PI*2);
+        ctx.strokeStyle = `rgba(255,140,0,${0.15 + pulse * 0.15})`;
+        ctx.lineWidth = 2 + pulse * 2; ctx.stroke();
+        ctx.fillStyle = `rgba(255,140,0,${0.03 + pulse * 0.04})`; ctx.fill();
+      }
+
+      // ROOT_EXPLOIT stealth pulse ring
+      if (bug.ability === 'stealth' && bug.stealthActive) {
+        ctx.beginPath(); ctx.arc(bug.x, bug.y, s * 1.8, 0, Math.PI*2);
+        ctx.strokeStyle = 'rgba(255,45,120,0.5)'; ctx.lineWidth = 1.5; ctx.stroke();
+      }
+
+      // SQL_INJECTOR ability glow ring
+      if (bug.abilityGlowTimer > 0) {
+        bug.abilityGlowTimer--;
+        const gAlpha = bug.abilityGlowTimer / 60;
+        const gRadius = s * 2 + (1 - gAlpha) * s;
+        ctx.beginPath(); ctx.arc(bug.x, bug.y, gRadius, 0, Math.PI*2);
+        ctx.strokeStyle = `rgba(191,95,255,${gAlpha})`; ctx.lineWidth = 3; ctx.stroke();
+      }
+    } else {
+      ctx.fillRect(bug.x-s/2, bug.y-s/2, s, s);
+      ctx.strokeRect(bug.x-s/2, bug.y-s/2, s, s);
+
+      // EVOLVED shield visual (cyan ring)
+      if (bug.evolved) {
+        const shieldPulse = (Math.sin(state.tick * 0.1 + bug.x) + 1) / 2;
+        ctx.beginPath(); ctx.arc(bug.x, bug.y, s * 0.85, 0, Math.PI*2);
+        ctx.strokeStyle = `rgba(0,229,255,${0.5 + shieldPulse * 0.4})`;
+        ctx.lineWidth = 1.5; ctx.stroke();
+      }
+    }
+    ctx.globalAlpha = 1;
+    ctx.shadowBlur=0;
+    ctx.fillStyle = isSlowed ? '#ffe600' : bug.color;
+    ctx.font = `bold ${isBoss ? 9 : 8}px JetBrains Mono`;
+    ctx.textAlign='center'; ctx.textBaseline='middle';
+    if (!isStealthed) ctx.fillText(bug.label || bug.type, bug.x, bug.y);
+    // HP bar
+    if (!isStealthed) {
+      const bw = isBoss ? 32 : 20, bh = isBoss ? 4 : 3;
+      ctx.fillStyle='#111'; ctx.fillRect(bug.x-bw/2, bug.y+s/2+2, bw, bh);
+      const hpRatio = bug.hp / (bug.maxHp||bug.hp);
+      ctx.fillStyle = isBoss ? '#ff2d78' : (hpRatio > 0.5 ? '#00ff41' : hpRatio > 0.25 ? '#ffe600' : '#ff2244');
+      ctx.fillRect(bug.x-bw/2, bug.y+s/2+2, bw*hpRatio, bh);
+    }
+  }
+
+  // DATA FRAGMENTS (SQL_INJECTOR projectiles)
+  for (const frag of (state.dataFragments || [])) {
+    const alpha = frag.life / frag.maxLife;
+    const pulse = (Math.sin(state.tick * 0.3) + 1) / 2;
+    ctx.globalAlpha = alpha;
+    ctx.beginPath(); ctx.arc(frag.x, frag.y, 5 + pulse * 2, 0, Math.PI*2);
+    ctx.fillStyle = '#bf5fff'; ctx.fill();
+    ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 1; ctx.stroke();
+    // trail
+    ctx.beginPath(); ctx.moveTo(frag.x, frag.y);
+    const tdx = frag.tx - frag.x, tdy = frag.ty - frag.y;
+    const tlen = Math.sqrt(tdx*tdx + tdy*tdy);
+    if (tlen > 0) { ctx.lineTo(frag.x - tdx/tlen*12, frag.y - tdy/tlen*12); }
+    ctx.strokeStyle = 'rgba(191,95,255,0.4)'; ctx.lineWidth = 2; ctx.stroke();
+    ctx.globalAlpha = 1;
+  }
+
+  // Floating texts
+  for (const f of state.floatingTexts) {
+    ctx.globalAlpha=f.alpha; ctx.fillStyle=f.color;
+    ctx.font='bold 11px JetBrains Mono'; ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillText(f.text, f.x, f.y);
+  }
+  ctx.globalAlpha=1;
+
+  // Placement preview
+  if (state.selectedTowerType && state.cursorCell) {
+    const [cc,cr] = state.cursorCell;
+    const canPlace = !PATH_SET.has(`${cc},${cr}`) && !state.towers.find(t=>t.col===cc&&t.row===cr);
+    ctx.fillStyle = canPlace ? 'rgba(0,255,65,0.15)' : 'rgba(255,34,68,0.15)';
+    ctx.strokeStyle = canPlace ? '#00ff4188' : '#ff224488'; ctx.lineWidth=1;
+    ctx.fillRect(cc*CELL, cr*CELL, CELL, CELL); ctx.strokeRect(cc*CELL, cr*CELL, CELL, CELL);
+  }
+
+  // Status effect overlay
+  if (state.ramLeakTimer > 0) {
+    const flicker = Math.sin(state.tick * 0.2) * 0.04 + 0.04;
+    ctx.fillStyle = `rgba(255,34,68,${flicker})`;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+  }
+
+  // Scanlines
+  for (let y=0;y<canvas.height;y+=4) { ctx.fillStyle='rgba(0,0,0,0.04)'; ctx.fillRect(0,y,canvas.width,1); }
+}
+
+function roundRect(ctx, x, y, w, h, r) {
+  ctx.beginPath(); ctx.moveTo(x+r,y); ctx.lineTo(x+w-r,y);
+  ctx.arcTo(x+w,y,x+w,y+r,r); ctx.lineTo(x+w,y+h-r);
+  ctx.arcTo(x+w,y+h,x+w-r,y+h,r); ctx.lineTo(x+r,y+h);
+  ctx.arcTo(x,y+h,x,y+h-r,r); ctx.lineTo(x,y+r);
+  ctx.arcTo(x,y,x+r,y,r); ctx.closePath();
+}
+
+// ===== GAME LOOP =====
+function loop() {
+  const steps = gameSpeed === 2 ? 2 : 1;
+  for (let i = 0; i < steps; i++) update();
+  draw();
+  requestAnimationFrame(loop);
+}
+
+canvas.addEventListener('mousemove', e => {
+  const rect = canvas.getBoundingClientRect();
+  state.cursorCell = [Math.floor((e.clientX-rect.left)/CELL), Math.floor((e.clientY-rect.top)/CELL)];
+});
+canvas.addEventListener('mouseleave', () => { state.cursorCell = null; });
+canvas.addEventListener('click', e => {
+  if (state.gameOver) return;
+  const rect = canvas.getBoundingClientRect();
+  const col = Math.floor((e.clientX-rect.left)/CELL);
+  const row = Math.floor((e.clientY-rect.top)/CELL);
+  const existing = state.towers.find(t => t.col===col&&t.row===row);
+  if (existing) { clickTower(existing); return; }
+  if (state.selectedTowerType) placeTower(col, row);
+});
+
+// ===== UPGRADE MODAL (with pause + penalty) =====
+let currentChallenge = null;
+let upgradeAnswered = false;
+
+function openUpgradeModal() {
+  if (!state.selectedTowerObj) return;
+  const t = state.selectedTowerObj;
+  const def = TOWER_DEFS[t.type];
+  if (t.level >= 3) return;
+  if (state.ram < def.cost) { log('RAM insuficiente para upgrade!', 'err'); return; }
+
+  // ARCADE MODE: instant upgrade, no question, no pause
+  if (!state.educationalMode) {
+    // If level 1 and has paths, pick first available path
+    if (t.level === 1 && def.paths && Object.keys(def.paths).length >= 2 && !t.path) {
+      // Show quick path picker without pausing
+      _arcadeShowPathPicker(t, def);
+      return;
+    }
+    const chosenPath = t.path || (Object.keys(def.paths||{})[0]||null);
+    state.ram -= def.cost;
+    t.level++;
+    if (chosenPath && !t.path) t.path = chosenPath;
+    addScore(45); // reduced score for arcade upgrade
+    updateUI();
+    log(`[ARCADE] ${def.name} upgrade → Nível ${t.level}!`, 'info');
+    clickTower(t);
+    return;
+  }
+
+  // EDUCATIONAL MODE: pause + question modal
+  gamePaused = true;
+
+  upgradeAnswered = false;
+  state.pendingUpgradePath = null;
+  document.getElementById('modal-feedback').className = '';
+  document.getElementById('modal-feedback').innerHTML = '';
+  document.getElementById('modal-cancel').style.display = 'inline-block';
+  document.getElementById('modal-understood').style.display = 'none';
+  document.getElementById('upgrade-modal').classList.add('visible');
+
+  // Generator tower: simplified upgrade (no paths, direct level up)
+  if (def.isGenerator) {
+    if (t.level >= 3) { log('RAM_Extractor já está no nível máximo!', 'warn'); return; }
+    if (!state.educationalMode) {
+      state.ram -= def.cost; t.level++;
+      addScore(45); updateUI();
+      log(`RAM_Extractor upgrade → Nível ${t.level} (geração ${def.genAmount*t.level}MB/pulso)!`, 'info');
+      closeModal(); clickTower(t); return;
+    }
+    gamePaused = true;
+    upgradeAnswered = false;
+    state.pendingUpgradePath = null;
+    document.getElementById('modal-feedback').className = '';
+    document.getElementById('modal-feedback').innerHTML = '';
+    document.getElementById('modal-cancel').style.display = 'inline-block';
+    document.getElementById('modal-understood').style.display = 'none';
+    document.getElementById('upgrade-modal').classList.add('visible');
+    presentChallengeFor('debug', 'TRY_CATCH_SHIELD', t.level + 1, def);
+    return;
+  }
+
+  if (t.level === 1 && def.paths && Object.keys(def.paths).length >= 2) {
+    document.getElementById('modal-title').textContent = `Escolha o Caminho — ${def.name}`;
+    document.getElementById('modal-sub').textContent = `Selecione uma especialização para ${def.name}.`;
+    const row = document.getElementById('modal-options');
+    row.innerHTML = '';
+    Object.keys(def.paths).forEach(key => {
+      const p = def.paths[key];
+      const btn = document.createElement('button');
+      btn.className = 'option-btn';
+      btn.textContent = `${p.name} — ${p.desc}`;
+      btn.onclick = () => { state.pendingUpgradePath = key; presentChallengeFor(t.type, key, 2, def); };
+      row.appendChild(btn);
+    });
+    document.getElementById('modal-challenge').innerHTML = `<div style="font-size:11px;color:var(--text-dim)">Escolha um caminho para ver o desafio.</div>`;
+    return;
+  }
+  const chosenPath = t.path || (Object.keys(def.paths||{})[0]||null);
+  const targetLevel = t.level + 1;
+  presentChallengeFor(t.type, chosenPath, targetLevel, def);
+}
+
+// Arcade path picker — lightweight, no pause
+function _arcadeShowPathPicker(t, def) {
+  gamePaused = true;
+  upgradeAnswered = false;
+  state.pendingUpgradePath = null;
+  document.getElementById('modal-feedback').className = '';
+  document.getElementById('modal-feedback').innerHTML = '';
+  document.getElementById('modal-cancel').style.display = 'inline-block';
+  document.getElementById('modal-understood').style.display = 'none';
+  document.getElementById('upgrade-modal').classList.add('visible');
+  document.getElementById('modal-title').textContent = `[ARCADE] Escolha o Caminho — ${def.name}`;
+  document.getElementById('modal-sub').textContent = `Sem pergunta no modo Arcade. Custo: ${def.cost} MB RAM.`;
+  document.getElementById('modal-challenge').innerHTML = `<div style="font-size:11px;color:var(--orange)">⚡ Modo Arcade: selecione a especialização e o upgrade é imediato.</div>`;
+  const row = document.getElementById('modal-options');
+  row.innerHTML = '';
+  Object.keys(def.paths).forEach(key => {
+    const p = def.paths[key];
+    const btn = document.createElement('button');
+    btn.className = 'option-btn';
+    btn.textContent = `${p.name} — ${p.desc}`;
+    btn.style.borderColor = 'var(--orange)';
+    btn.onclick = () => {
+      if (state.ram < def.cost) { log('RAM insuficiente!', 'err'); closeModal(); return; }
+      state.ram -= def.cost;
+      t.level++;
+      t.path = key;
+      addScore(45);
+      updateUI();
+      log(`[ARCADE] ${def.name} upgrade → Nível ${t.level} (${p.name})!`, 'info');
+      closeModal();
+      clickTower(t);
+    };
+    row.appendChild(btn);
+  });
+}
+
+function presentChallengeFor(type, pathKey, targetLevel, def) {
+  const bank = EDU_CHALLENGES[type]?.[pathKey]?.[targetLevel] || UPGRADE_CHALLENGES[type]?.[pathKey]?.[targetLevel] || null;
+  if (bank && bank.length > 0) {
+    const ch = bank[Math.floor(Math.random() * bank.length)];
+    currentChallenge = ch;
+    const levelBadge = { basic: 'BÁSICO', inter: 'INTERMEDIÁRIO', adv: 'AVANÇADO/ES6+' };
+    const badgeCls   = { basic: 'basic', inter: 'inter', adv: 'adv' };
+    document.getElementById('modal-title').textContent = `UPGRADE: ${def.name} → LVL ${targetLevel}`;
+    document.getElementById('modal-sub').textContent = `Responda corretamente para desbloquear (custo: ${def.cost} MB RAM).`;
+    document.getElementById('modal-challenge').innerHTML = `
+      <span class="diff-badge ${badgeCls[ch.level]||'basic'}">${levelBadge[ch.level]||'BÁSICO'}</span>
+      <div style="font-size:13px;color:var(--text);line-height:1.8">${ch.prompt}</div>
+    `;
+    const row = document.getElementById('modal-options');
+    row.innerHTML = '';
+    [...ch.options].sort(() => Math.random() - 0.5).forEach(o => {
+      const btn = document.createElement('button');
+      btn.className = 'option-btn';
+      btn.textContent = o;
+      btn.onclick = () => answerChallenge(o, btn, ch, type, pathKey);
+      row.appendChild(btn);
+    });
+  } else {
+    document.getElementById('modal-challenge').innerHTML = `<div style="font-size:12px;color:var(--text-dim)">Desafio indisponível. Tente novamente.</div>`;
+    document.getElementById('modal-options').innerHTML = '';
+  }
+}
+
+function renderChallengeExplanation(ch, isCorrect, penalty = 0) {
+  const code = ch.code ? `<pre class="challenge-code">${escapeHTML(ch.code)}</pre>` : '';
+  const status = isCorrect ? 'Resposta correta.' : `Resposta correta: <strong>${escapeHTML(ch.correct)}</strong>.`;
+  const penaltyText = penalty > 0 ? ` Penalidade: -${penalty} MB RAM.` : '';
+  return `${status}${penaltyText}<br>${escapeHTML(ch.explain || '')}${code}`;
+}
+
+function answerChallenge(answer, btn, challenge, type, pathKey) {
+  if (upgradeAnswered) return;
+  upgradeAnswered = true;
+  const fb = document.getElementById('modal-feedback');
+  const ch = challenge || currentChallenge;
+  document.querySelectorAll('.option-btn').forEach(b => { b.disabled = true; });
+  document.getElementById('modal-cancel').style.display = 'none';
+  document.getElementById('modal-understood').style.display = 'inline-block';
+
+  if (answer === ch.correct) {
+    btn.classList.add('correct');
+    fb.className = 'ok';
+    fb.innerHTML = renderChallengeExplanation(ch, true);
+    const t = state.selectedTowerObj;
+    const def = TOWER_DEFS[t.type];
+    state.ram -= def.cost; t.level++;
+    if (state.pendingUpgradePath) { t.path = state.pendingUpgradePath; state.pendingUpgradePath = null; }
+    else if (pathKey) { t.path = pathKey; }
+    addScore(75);
+    updateUI();
+    log(`${def.name} upgrade → Nível ${t.level}!`, 'info');
+    clickTower(t);
+  } else {
+    btn.classList.add('wrong');
+    fb.className = 'fail';
+    const penalty = 0;
+    fb.innerHTML = renderChallengeExplanation(ch, false, penalty);
+    document.querySelectorAll('.option-btn').forEach(b => { if (b.textContent === ch.correct) b.classList.add('correct'); });
+    state.pendingUpgradePath = null;
+    updateUI();
+  }
+}
+
+function closeModal() {
+  document.getElementById('upgrade-modal').classList.remove('visible');
+  state.pendingUpgradePath = null;
+  gamePaused = false; // UNPAUSE
+}
+
+// ===== GAME OVER / WIN / RESET =====
+function finalizeScore(won) {
+  if (state.scoreFinalized) return state.finalScore || state.score;
+  state.won = won;
+  const perfectMult = won && state.isPerfectRun ? 1.5 : 1;
+  const arcadeMult = state.educationalMode ? 1.0 : 0.6;
+  const finalScore = Math.floor(state.score * perfectMult * arcadeMult);
+  state.finalScore = finalScore;
+  state.arcadeMult = arcadeMult;
+  state.perfectMult = perfectMult;
+  state.baseScore = state.score;
+  state.score = finalScore;
+  state.scoreFinalized = true;
+  state.savedToTop10 = recordScore(finalScore, won);
+  // Add shop points (addShopPoints defined in shop section below)
+  if (typeof addShopPoints === 'function') addShopPoints(finalScore);
+  updateUI();
+  return finalScore;
+}
+
+function triggerGameOver() {
+  state.gameOver = true;
+  const finalScore = finalizeScore(false);
+  document.getElementById('overlay-title').textContent = 'GAME_OVER';
+  document.getElementById('overlay-title').className = 'lose';
+  document.getElementById('overlay-msg').textContent = 'SISTEMA COMPROMETIDO — BREACH CONFIRMADO';
+  document.getElementById('final-score').textContent = finalScore;
+  document.getElementById('overlay-stats').innerHTML = `
+    Waves: ${state.wavesCompleted} / ${state.maxWaves}<br>
+    Bugs eliminados: ${state.totalKills}<br>
+    RAM total coletado: ${state.totalRamEarned} MB<br>
+    ${state.savedToTop10 ? 'Novo registro no Top 10 local!' : 'Score fora do Top 10 local.'}
+  `;
+  document.getElementById('overlay').classList.add('visible');
+}
+
+function triggerWin() {
+  state.gameOver = true;
+  const finalScore = finalizeScore(true);
+  const isFinalBoss = state.wave === 21;
+  document.getElementById('overlay-title').textContent = isFinalBoss ? 'CORE DEFENDED' : 'SISTEMA PROTEGIDO';
+  document.getElementById('overlay-title').className = 'win';
+  document.getElementById('overlay-msg').textContent = isFinalBoss
+    ? '⚡ TERMINAL_ZERO DESTRUÍDO — O CORE ESTÁ SEGURO ⚡'
+    : 'TODOS OS VETORES BLOQUEADOS. ACESSO GARANTIDO.';
+  document.getElementById('final-score').textContent = finalScore;
+  const diffLabel = DIFF_CONFIG[state.difficulty]?.label || state.difficulty;
+  const diffMult = DIFF_CONFIG[state.difficulty]?.scoreMult || 1;
+  const arcadeMult = state.educationalMode ? 1.0 : 0.6;
+  const arcadeLabel = state.educationalMode ? '1.0 (Educativo)' : '0.6 (Arcade)';
+  const perfectLabel = (state.isPerfectRun ? 'x1.5 (Perfect System)' : 'x1.0');
+  document.getElementById('overlay-stats').innerHTML = `
+    <div style="font-size:11px;color:var(--cyan);letter-spacing:1px;margin-bottom:8px">
+      Score Base × Dificuldade × Modo = Score Final
+    </div>
+    <div style="font-size:10px;color:var(--text);margin-bottom:8px">
+      ${state.baseScore || state.finalScore} × ${perfectLabel} × ${arcadeLabel} = <span style="color:var(--green);font-weight:700">${finalScore}</span>
+    </div>
+    Waves concluídas: ${state.wavesCompleted} / ${state.maxWaves}<br>
+    Bugs eliminados: ${state.totalKills}<br>
+    RAM coletado: ${state.totalRamEarned} MB<br>
+    Perfect System: ${state.isPerfectRun ? 'ATIVO (x1.5)' : 'inativo'}<br>
+    Modo: ${state.educationalMode ? 'EDUCATIVO (x1.0)' : 'ARCADE (x0.6)'}<br>
+    ${state.savedToTop10 ? 'Novo registro no Top 10 local!' : 'Score fora do Top 10 local.'}
+  `;
+  document.getElementById('overlay').classList.add('visible');
+}
+
+function resetGame() {
+  document.getElementById('overlay').classList.remove('visible');
+  document.getElementById('log-box').innerHTML = '';
+  clearMalwarePopups();
+  const dc = DIFF_CONFIG[state.difficulty];
+  const wasEdu = state.educationalMode;
+  initState();
+  state.difficulty = selectedDiff;
+  state.ram = dc.ram;
+  state.educationalMode = wasEdu;
+  updateUI(); deselectAll();
+  document.getElementById('btn-wave').disabled = false;
+  document.getElementById('boss-bar').classList.remove('visible');
+  document.getElementById('terminal-zero-bar').classList.remove('visible');
+  gamePaused = false;
+  gameSpeed = 1;
+  const speedBtn = document.getElementById('btn-speed');
+  if (speedBtn) { speedBtn.textContent = '▷ SPEED: 1x'; speedBtn.style.borderColor = ''; speedBtn.style.color = ''; speedBtn.style.boxShadow = ''; }
+  log('Sistema reiniciado.', 'info');
+}
+
+function toggleAutoStart() {
+  state.autoStart = !state.autoStart;
+  const btn = document.getElementById('btn-auto');
+  btn.textContent = `AUTO: ${state.autoStart ? 'ON' : 'OFF'}`;
+  btn.style.borderColor = state.autoStart ? '#00aaff' : '';
+}
+
+// ===== INIT =====
+updateUI();
+renderScoreboard();
+document.getElementById('btn-wave').disabled = true;
+log('CODE DEFENDER: SYSTEM BREACH v3.0 inicializado.', 'info');
+log('Autentique-se no menu para iniciar a defesa.', 'ok');
+loop();
+
+
+// ===== SHOP SYSTEM =====
+const SHOP_KEY = 'codeDefenderShop_v1';
+
+function loadShopData() {
+  try {
+    const raw = localStorage.getItem(SHOP_KEY);
+    const d = raw ? JSON.parse(raw) : {};
+    return {
+      points: d.points || 0,
+      dmgLevel: d.dmgLevel || 0,
+      ramLevel: d.ramLevel || 0,
+      catOwned: d.catOwned || false,
+      catActive: d.catActive || false
+    };
+  } catch { return { points:0, dmgLevel:0, ramLevel:0, catOwned:false, catActive:false }; }
+}
+
+function saveShopData(d) {
+  try { localStorage.setItem(SHOP_KEY, JSON.stringify(d)); } catch {}
+}
+
+function addShopPoints(pts) {
+  const d = loadShopData();
+  d.points += pts;
+  saveShopData(d);
+}
+
+function renderShopUI() {
+  const d = loadShopData();
+  const ptsEl = document.getElementById('shop-pts');
+  if (ptsEl) ptsEl.textContent = d.points.toLocaleString('pt-BR');
+
+  const shopDmgCosts = [500, 600, 700, 800, 900];
+  const shopRamCosts = [400, 500, 600];
+
+  const dmgCostEl = document.getElementById('shop-dmg-cost');
+  const dmgLvlEl = document.getElementById('shop-dmg-level');
+  const dmgItem = document.getElementById('shop-dmg');
+  if (dmgCostEl) {
+    if (d.dmgLevel >= 5) {
+      dmgCostEl.textContent = 'MÁXIMO';
+      dmgItem.classList.add('maxed');
+    } else {
+      dmgCostEl.textContent = shopDmgCosts[d.dmgLevel] + ' ⬡';
+      dmgItem.classList.remove('maxed');
+    }
+  }
+  if (dmgLvlEl) dmgLvlEl.textContent = 'Nível: ' + d.dmgLevel + ' / 5 (+' + (d.dmgLevel*10) + '% dano)';
+
+  const ramCostEl = document.getElementById('shop-ram-cost');
+  const ramLvlEl = document.getElementById('shop-ram-level');
+  const ramItem = document.getElementById('shop-ram');
+  if (ramCostEl) {
+    if (d.ramLevel >= 3) {
+      ramCostEl.textContent = 'MÁXIMO';
+      ramItem.classList.add('maxed');
+    } else {
+      ramCostEl.textContent = shopRamCosts[d.ramLevel] + ' ⬡';
+      ramItem.classList.remove('maxed');
+    }
+  }
+  if (ramLvlEl) ramLvlEl.textContent = 'Nível: ' + d.ramLevel + ' / 3 (-' + (d.ramLevel*10) + ' MB custo)';
+
+  const catCostEl = document.getElementById('shop-cat-cost');
+  const catStatusEl = document.getElementById('shop-cat-status');
+  const catItem = document.getElementById('shop-cat');
+  if (d.catOwned) {
+    if (catCostEl) catCostEl.textContent = d.catActive ? '✓ ATIVO' : '▶ ATIVAR';
+    if (catStatusEl) catStatusEl.textContent = 'Status: ' + (d.catActive ? '🐱 Passeando nas bordas!' : 'Adquirido — clique p/ ativar');
+    if (catItem) catItem.classList.add('purchased');
+  } else {
+    if (catCostEl) catCostEl.textContent = '800 ⬡';
+    if (catStatusEl) catStatusEl.textContent = 'Status: Não adquirido';
+  }
+}
+
+function buyShopItem(item) {
+  const d = loadShopData();
+  const shopDmgCosts = [500, 600, 700, 800, 900];
+  const shopRamCosts = [400, 500, 600];
+  const msgEl = document.getElementById('shop-msg');
+
+  function showMsg(text, ok) {
+    if (msgEl) {
+      msgEl.textContent = text;
+      msgEl.style.borderColor = ok ? 'var(--green)' : 'var(--red)';
+      msgEl.style.color = ok ? 'var(--green)' : 'var(--red)';
+      msgEl.style.background = ok ? '#001a00' : '#1a0005';
+      setTimeout(() => { msgEl.textContent=''; msgEl.style.borderColor='transparent'; msgEl.style.background=''; }, 3000);
+    }
+  }
+
+  if (item === 'dmg') {
+    if (d.dmgLevel >= 5) { showMsg('Já está no nível máximo!', false); return; }
+    const cost = shopDmgCosts[d.dmgLevel];
+    if (d.points < cost) { showMsg('Pontos insuficientes! (' + cost + ' ⬡ necessários)', false); return; }
+    d.points -= cost; d.dmgLevel++;
+    saveShopData(d); renderShopUI();
+    showMsg('✓ +10% Dano desbloqueado! (Nível ' + d.dmgLevel + ')', true);
+  } else if (item === 'ram') {
+    if (d.ramLevel >= 3) { showMsg('Já está no nível máximo!', false); return; }
+    const cost = shopRamCosts[d.ramLevel];
+    if (d.points < cost) { showMsg('Pontos insuficientes! (' + cost + ' ⬡ necessários)', false); return; }
+    d.points -= cost; d.ramLevel++;
+    saveShopData(d); renderShopUI();
+    showMsg('✓ -10 MB custo de torres! (Nível ' + d.ramLevel + ')', true);
+  } else if (item === 'cat') {
+    if (!d.catOwned) {
+      if (d.points < 800) { showMsg('Pontos insuficientes! (800 ⬡ necessários)', false); return; }
+      d.points -= 800; d.catOwned = true; d.catActive = true;
+      saveShopData(d); renderShopUI(); spawnCyberCat();
+      showMsg('🐱 Cyber-Cat adquirido e ativado!', true);
+    } else {
+      d.catActive = !d.catActive;
+      saveShopData(d); renderShopUI();
+      if (d.catActive) { spawnCyberCat(); showMsg('🐱 Cyber-Cat ativado!', true); }
+      else { removeCyberCat(); showMsg('Cyber-Cat desativado.', true); }
+    }
+  }
+}
+
+// Apply shop bonuses to game state when starting session
+function applyShopBonuses() {
+  const d = loadShopData();
+  // Reset costs to base first
+  for (const key of Object.keys(TOWER_DEFS)) {
+    if (TOWER_DEFS[key]._baseCost) TOWER_DEFS[key].cost = TOWER_DEFS[key]._baseCost;
+  }
+  // Apply RAM cost reduction
+  if (d.ramLevel > 0) {
+    const reduction = d.ramLevel * 10;
+    for (const key of Object.keys(TOWER_DEFS)) {
+      if (!TOWER_DEFS[key]._baseCost) TOWER_DEFS[key]._baseCost = TOWER_DEFS[key].cost;
+      TOWER_DEFS[key].cost = Math.max(10, TOWER_DEFS[key]._baseCost - reduction);
+    }
+    log('⬡ Loja: custo de torres -' + reduction + ' MB (nível ' + d.ramLevel + ')', 'info');
+  }
+  if (d.dmgLevel > 0) log('⬡ Loja: +' + (d.dmgLevel*10) + '% dano global ativo.', 'info');
+}
+
+// Patch tower attack to apply global damage bonus
+// We intercept in the update loop by modifying effDmg via a global
+Object.defineProperty(window, 'SHOP_DMG_MULT', {
+  get() { const d = loadShopData(); return 1 + d.dmgLevel * 0.1; },
+  configurable: true
+});
+
+function switchHomeTab(tab) {
+  document.getElementById('panel-scores').style.display = tab === 'scores' ? '' : 'none';
+  document.getElementById('panel-shop').style.display = tab === 'shop' ? '' : 'none';
+  document.getElementById('tab-scores').style.borderBottomColor = tab === 'scores' ? 'var(--cyan)' : 'transparent';
+  document.getElementById('tab-scores').style.background = tab === 'scores' ? 'rgba(0,229,255,0.08)' : 'transparent';
+  document.getElementById('tab-scores').style.color = tab === 'scores' ? 'var(--cyan)' : 'var(--text-dim)';
+  document.getElementById('tab-shop').style.borderBottomColor = tab === 'shop' ? 'var(--purple)' : 'transparent';
+  document.getElementById('tab-shop').style.background = tab === 'shop' ? 'rgba(191,95,255,0.07)' : 'transparent';
+  document.getElementById('tab-shop').style.color = tab === 'shop' ? 'var(--purple)' : 'var(--text-dim)';
+  if (tab === 'shop') renderShopUI();
+}
+
+// ===== CYBER-CAT =====
+let cyberCatEl = null;
+let cyberCatAnim = null;
+let catX = 60, catY = 40, catVX = 1.2, catVY = 0.7, catDir = 1;
+const CAT_FRAMES = ['🐱','😺','😸'];
+let catFrameIdx = 0, catFrameTick = 0;
+
+function spawnCyberCat() {
+  removeCyberCat();
+  cyberCatEl = document.createElement('div');
+  cyberCatEl.id = 'cyber-cat';
+  cyberCatEl.textContent = '🐱';
+  catX = 80; catY = window.innerHeight - 100;
+  catVX = 1.4; catVY = -0.5; catDir = 1;
+  document.body.appendChild(cyberCatEl);
+  animateCyberCat();
+}
+
+function removeCyberCat() {
+  if (cyberCatEl) { cyberCatEl.remove(); cyberCatEl = null; }
+  if (cyberCatAnim) { cancelAnimationFrame(cyberCatAnim); cyberCatAnim = null; }
+}
+
+function animateCyberCat() {
+  if (!cyberCatEl) return;
+  const margin = 30;
+  const W = window.innerWidth, H = window.innerHeight;
+
+  catX += catVX * catDir;
+  catY += catVY;
+
+  // Bounce off edges
+  if (catX >= W - margin) { catDir = -1; catVY = (Math.random() - 0.5) * 1.5; }
+  if (catX <= margin) { catDir = 1; catVY = (Math.random() - 0.5) * 1.5; }
+  if (catY <= margin) catVY = Math.abs(catVY) + 0.1;
+  if (catY >= H - margin) catVY = -(Math.abs(catVY) + 0.1);
+  catY = Math.max(margin, Math.min(H - margin, catY));
+
+  // Occasionally change direction randomly
+  if (Math.random() < 0.003) catVY += (Math.random() - 0.5) * 0.8;
+  catVY = Math.max(-2, Math.min(2, catVY));
+
+  // Frame animation
+  catFrameTick++;
+  if (catFrameTick >= 18) { catFrameTick=0; catFrameIdx=(catFrameIdx+1)%CAT_FRAMES.length; }
+  cyberCatEl.textContent = catDir < 0 ? '🐱' : '😺';
+  cyberCatEl.style.transform = catDir < 0 ? 'scaleX(-1)' : 'scaleX(1)';
+  cyberCatEl.style.left = catX + 'px';
+  cyberCatEl.style.top = catY + 'px';
+
+  cyberCatAnim = requestAnimationFrame(animateCyberCat);
+}
+
+// Init shop on load
+renderShopUI();
+// Start cyber-cat if it was active
+(function() { const d = loadShopData(); if (d.catOwned && d.catActive) spawnCyberCat(); })();
+
+</script>
+</body>
+</html>
