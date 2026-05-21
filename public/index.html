@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CODE DEFENDER: SYSTEM BREACH</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;600;700;800&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+<div id="scanlines"></div>
+
+<!-- HOME OVERLAY (nova homepage) -->
+<div id="home-overlay">
+  <div class="bg-grid"></div>
+  <div class="bg-lines" id="bg-lines"></div>
+  <div id="home-box">
+    <div class="home-header">
+      <div class="corner-tl"></div>
+      <div class="corner-tr"></div>
+      <div class="home-badge">SYSTEM SECURITY v3.0</div>
+      <div class="home-title">
+        CODE DEFENDER
+        <span class="breach">SYSTEM BREACH</span>
+      </div>
+      <div class="home-sub">&gt; INITIALIZE DEFENSE PROTOCOL — AUTHENTICATE TO CONTINUE _</div>
+    </div>
+    <div class="home-body">
+      <div class="home-left">
+
+      <div class="term-block">
+        <span class="t-cyan">[SYS]</span> Ameaças detectadas na rede corporativa.<br>
+        <span class="t-red">[WARN]</span> Múltiplos vetores de ataque identificados.<br>
+        <span class="t-green">[OK]</span> Defesa ativada. Aguardando autenticação do operador.
+      </div>
+
+      <div class="home-field">
+        <div class="home-section-label">&gt; MODO DE JOGO</div>
+        <div class="mode-toggle-wrap">
+          <div class="mode-toggle-header">
+            <div>Selecione o protocolo de operação</div>
+            <div class="mode-switch" data-action="toggleGameMode()">
+              <div id="mode-switch-track" class="mode-switch-track">
+                <div class="mode-switch-thumb"></div>
+              </div>
+            </div>
+          </div>
+          <div class="mode-switch-labels">
+            <span class="edu">■ EDUCATIVO — Responda perguntas p/ upgrade | Score 100%</span>
+          </div>
+          <div class="mode-switch-labels">
+            <span class="arc" id="arc-label-text">□ ARCADE — Upgrades instantâneos | Score 60%</span>
+          </div>
+          <div class="mode-edu-text" id="mode-edu-indicator">▶ MODO EDUCATIVO (padrão) — Upgrades exigem resposta correta. Pontuação integral.</div>
+          <div class="mode-warning" id="mode-warning">⚠ MODO ARCADE detectado: Multiplicador de Score 0.6x</div>
+        </div>
+      </div>
+
+      <div class="home-field">
+        <div class="home-section-label">&gt; OPERADOR</div>
+        <input id="player-name" class="home-input" placeholder="Digite seu callsign..." maxlength="20" autocomplete="username" />
+        <input id="auth-password" class="home-input auth-password" type="password" placeholder="Senha do operador..." maxlength="72" autocomplete="current-password" />
+        <div class="auth-actions">
+          <button class="btn btn-cyan" data-action="loginUser()">LOGIN</button>
+          <button class="btn" data-action="registerUser()">CADASTRAR</button>
+          <button class="btn btn-red" data-action="logoutUser()">LOGOUT</button>
+        </div>
+        <div id="auth-status" class="auth-status">Autentique-se para carregar loja e ranking do banco.</div>
+      </div>
+
+      <div class="home-field">
+        <div class="home-section-label">&gt; NÍVEL DE CLEARANCE</div>
+        <div class="diff-grid">
+          <div class="diff-card diff-easy" id="diff-easy" data-action="selectDiff('easy')">
+            <div class="diff-name">JUNIOR</div>
+            <div class="diff-label">Fácil</div>
+            <div class="diff-ram">300 MB</div>
+            <div class="diff-stat">Score x1<br>Inimigos frágeis</div>
+          </div>
+          <div class="diff-card diff-normal selected" id="diff-normal" data-action="selectDiff('normal')">
+            <div class="diff-name">PLENO</div>
+            <div class="diff-label">Normal</div>
+            <div class="diff-ram">200 MB</div>
+            <div class="diff-stat">Score x1.5<br>Balanceado</div>
+          </div>
+          <div class="diff-card diff-hard" id="diff-hard" data-action="selectDiff('hard')">
+            <div class="diff-name">SENIOR</div>
+            <div class="diff-label">Difícil</div>
+            <div class="diff-ram">100 MB</div>
+            <div class="diff-stat">Score x3<br>+5% speed a cada 2 waves</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="home-field">
+        <div class="home-section-label">&gt; TOPOLOGIA DE REDE</div>
+        <div class="map-grid">
+          <div class="map-card selected" data-map="standard" id="map-standard" data-action="selectMap('standard')">
+            <div class="map-card-name">▸ MAP 01 — STANDARD</div>
+            <div class="map-card-desc">Caminho padrão. Ideal para iniciantes.</div>
+          </div>
+          <div class="map-card" data-map="datacenter" id="map-datacenter" data-action="selectMap('datacenter')">
+            <div class="map-card-name">▸ MAP 02 — DATA CENTER</div>
+            <div class="map-card-desc">Curvas fechadas. Exige posicionamento avançado.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="home-actions">
+        <button class="btn btn-red" data-action="cancelSession()">ABORT</button>
+        <button class="btn btn-cyan" data-action="startSession()">▶ INICIAR MISSÃO</button>
+      </div>
+      </div>
+
+      <div class="home-right">
+        <!-- TABS -->
+        <div>
+          <button id="tab-scores" data-action="switchHomeTab('scores')">TOP 10</button>
+          <button id="tab-shop" data-action="switchHomeTab('shop')">LOJA ⬡</button>
+        </div>
+
+        <!-- SCOREBOARD PANEL -->
+        <div id="panel-scores" class="scoreboard-panel">
+          <div class="scoreboard-sub">
+            Senior x3 | Perfect x1.5 | Arcade x0.6 | Wave 21: TERMINAL_ZERO
+          </div>
+          <div id="scoreboard-list"></div>
+        </div>
+
+        <!-- SHOP PANEL -->
+        <div id="panel-shop">
+          <div>CENTRAL DE UPGRADES</div>
+          <div>&amp; COSMÉTICOS</div>
+          <div id="shop-points-display">
+            ⬡ MOEDAS: <span id="shop-pts">0</span> &nbsp;<span>+50 por Boss | +150 Terminal Zero</span>
+          </div>
+
+          <!-- UPGRADES -->
+          <div>&gt; UPGRADES PERMANENTES</div>
+
+          <div class="shop-item" id="shop-dmg" data-action="buyShopItem('dmg')">
+            <div>
+              <div>▲ +7% Dano Global</div>
+              <div id="shop-dmg-cost">500 ⬡</div>
+            </div>
+            <div>Torres causam 7% mais dano por nível. Acumula.</div>
+            <div id="shop-dmg-level">Nível: 0 / 5</div>
+          </div>
+
+          <div class="shop-item" id="shop-ram" data-action="buyShopItem('ram')">
+            <div>
+              <div>▼ -10 MB Custo de Torres</div>
+              <div id="shop-ram-cost">400 ⬡</div>
+            </div>
+            <div>Reduz custo de instalação de torres em 10 MB. Acumula.</div>
+            <div id="shop-ram-level">Nível: 0 / 3</div>
+          </div>
+
+          <!-- COSMÉTICOS -->
+          <div>&gt; COSMÉTICOS</div>
+
+          <div class="shop-item" id="shop-cat" data-action="buyShopItem('cat')">
+            <div>
+              <div>🐱 Gato Hacker (Cyber-Cat)</div>
+              <div id="shop-cat-cost">250 ⬡</div>
+            </div>
+            <div>Um gatinho cibernético passeia pelas bordas da tela durante o jogo.</div>
+            <div id="shop-cat-status">Status: Não adquirido</div>
+          </div>
+
+          <div id="shop-msg"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- TERMINAL ZERO FINAL BOSS BAR -->
+<div id="terminal-zero-bar">
+  <div id="tz-label">TERMINAL_ZERO: THE CORE OVERLORD</div>
+  <div id="tz-hp-row">
+    <div id="tz-bar-track"><div id="tz-bar-fill"></div></div>
+    <div id="tz-hp-text">??? HP</div>
+  </div>
+  <div id="tz-abilities">
+    <div class="tz-ability-badge kp" id="tz-kp-badge">⚡ KERNEL_PANIC</div>
+    <div class="tz-ability-badge dc" id="tz-dc-badge">☣ DATA_CORRUPTION</div>
+  </div>
+</div>
+
+<!-- HEADER -->
+<div id="header">
+  <div id="title"><span>▸</span> CODE_DEFENDER <span>SB</span></div>
+  <div class="stat-group">
+    <div class="stat">RAM <span class="stat-val" id="stat-ram">200</span> MB</div>
+    <div class="stat">LIVES <span class="stat-val" id="stat-lives">10</span></div>
+    <div class="stat">SCORE <span class="stat-val" id="stat-score">0</span></div>
+    <div id="player-tag">[ ANON ]</div>
+    <div id="difficulty-tag" class="normal">PLENO</div>
+  </div>
+  <div>
+    <div id="wave-info">WAVE <span id="stat-wave">0</span> / <span id="stat-maxwave">21</span></div>
+  </div>
+  <div id="boss-bar">
+    <div id="boss-bar-label"><span id="boss-name">BOSS</span><span id="boss-hp-text">???</span></div>
+    <div id="boss-bar-track"><div id="boss-bar-fill"></div></div>
+  </div>
+  <div id="status-bar"></div>
+</div>
+
+<!-- MAIN -->
+<div id="main">
+  <!-- SIDEBAR -->
+  <div id="sidebar">
+    <div class="sidebar-title">&gt; install_tower</div>
+
+    <div class="tower-card" id="card-firewall" data-action="selectTower('firewall')">
+      <div class="tower-name"><span class="badge">if</span>Basic_Firewall</div>
+      <div class="tower-desc">Dano crítico ×2 em STRING/INT.</div>
+      <div class="tower-cost"><span class="ram-icon">▣</span> 50 MB RAM</div>
+    </div>
+
+    <div class="tower-card" id="card-loop" data-action="selectTower('loop')">
+      <div class="tower-name"><span class="badge">for</span>Loop_Cannon</div>
+      <div class="tower-desc">Múltiplos alvos em sequência.</div>
+      <div class="tower-cost"><span class="ram-icon">▣</span> 75 MB RAM</div>
+    </div>
+
+    <div class="tower-card" id="card-debug" data-action="selectTower('debug')">
+      <div class="tower-name"><span class="badge">~~</span>Debug_Buffer</div>
+      <div class="tower-desc">Aplica slow 50% nos bugs.</div>
+      <div class="tower-cost"><span class="ram-icon">▣</span> 65 MB RAM</div>
+    </div>
+
+    <div class="tower-card" id="card-regex" data-action="selectTower('regex')">
+      <div class="tower-name"><span class="badge">/**/</span>Regex_Bomb</div>
+      <div class="tower-desc">Explosão em área. Dano a todos.</div>
+      <div class="tower-cost"><span class="ram-icon">▣</span> 100 MB RAM</div>
+    </div>
+
+    <div class="tower-card" id="card-ramextract" data-action="selectTower('ramextract')">
+      <div class="tower-name"><span class="badge">RAM</span>RAM_Extractor</div>
+      <div class="tower-desc">Gera +8 MB RAM a cada ~8s durante waves. Não ataca.</div>
+      <div class="tower-cost"><span class="ram-icon">▣</span> 80 MB RAM</div>
+    </div>
+
+    <hr class="divider">
+    <div class="sidebar-title">&gt; sys_log</div>
+    <div id="log-box"></div>
+  </div>
+
+  <!-- CANVAS -->
+  <div id="canvas-wrap">
+    <canvas id="gameCanvas"></canvas>
+    <!-- malware popups go here -->
+  </div>
+
+  <!-- RIGHT PANEL -->
+  <div id="right-panel">
+    <div class="panel-section">
+      <div class="panel-title">&gt; node_info</div>
+      <div id="selected-info">
+        <div>
+          Selecione uma torre no painel<br>e clique no grid para instalar.<br><br>
+          Clique numa torre instalada<br>para upgrade/remoção.
+        </div>
+      </div>
+    </div>
+
+    <hr class="divider">
+
+    <div class="panel-section">
+      <div class="panel-title">&gt; controls</div>
+      <button class="btn btn-cyan" id="btn-wave" data-action="startWave()">▶ NEXT_WAVE</button>
+      <button class="btn" id="btn-auto" data-action="toggleAutoStart()">AUTO: OFF</button>
+      <button class="btn" id="btn-speed" data-action="toggleSpeed()">▷ SPEED: 1x</button>
+      <button class="btn btn-red" id="btn-sell" data-action="sellTower()">✕ REMOVE</button>
+      <button class="btn" data-action="deselectAll()">◌ DESELECT</button>
+      <button class="btn btn-menu" data-action="goToMenu()">⟵ MENU</button>
+    </div>
+
+    <hr class="divider">
+
+    <div id="wave-bar" class="panel-section">
+      <div class="panel-title">&gt; wave_progress</div>
+      <div class="progress-label">Bugs eliminados:</div>
+      <div class="progress-track"><div class="progress-fill" id="prog-bugs"></div></div>
+      <div class="progress-label">Integridade:</div>
+      <div class="progress-track"><div class="progress-fill" id="prog-lives"></div></div>
+      <div>
+        <span>■</span> Caminho<br>
+        <span>◉</span> Torre ativa<br>
+        <span>□</span> Slot livre
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- UPGRADE MODAL -->
+<div id="upgrade-modal">
+  <div id="modal-box">
+    <div id="modal-title">UPGRADE_CHALLENGE</div>
+    <div id="modal-sub">Complete a lógica para desbloquear:</div>
+    <div id="modal-challenge"></div>
+    <div class="option-row" id="modal-options"></div>
+    <div id="modal-feedback"></div>
+    <div class="modal-actions">
+      <button class="btn btn-red" id="modal-cancel" data-action="closeModal()">CANCELAR</button>
+      <button class="btn btn-cyan" id="modal-understood" data-action="closeModal()">ENTENDIDO</button>
+    </div>
+  </div>
+</div>
+
+<!-- EXIT CONFIRM MODAL -->
+<div id="confirm-modal">
+  <div id="confirm-box">
+    <div id="confirm-title">ABORTAR PARTIDA?</div>
+    <div id="confirm-msg">
+      A wave em andamento será encerrada e o progresso desta sessão será perdido.
+      Confirme apenas se quiser voltar ao menu principal.
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-cyan" data-action="closeExitConfirm()">CONTINUAR DEFESA</button>
+      <button class="btn btn-red" data-action="confirmExitToMenu()">SAIR DA PARTIDA</button>
+    </div>
+  </div>
+</div>
+
+<!-- GAME OVER OVERLAY -->
+<div id="overlay">
+  <div id="overlay-title">GAME_OVER</div>
+  <div id="overlay-msg">SISTEMA COMPROMETIDO</div>
+  <div id="overlay-score">SCORE: <span id="final-score">0</span></div>
+  <div id="overlay-stats"></div>
+  <button class="btn btn-cyan" data-action="resetGame()">⟳ REINICIAR</button>
+  <button class="btn btn-menu" data-action="goToMenu(true)">⟵ MENU PRINCIPAL</button>
+</div>
+
+
+<script type="module" src="/js/main.js"></script>
+</body>
+</html>
